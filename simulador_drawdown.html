@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Drawdown — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.3);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --red:#c05555; --warn:#c8943a;
+    --green-dim:rgba(90,170,122,0.15); --red-dim:rgba(192,85,85,0.15);
+    --warn-dim:rgba(200,148,58,0.15); --gold-dim:rgba(200,169,110,0.15);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+
+  main { width:100%; max-width:720px; padding:0 18px 80px; }
+
+  .page-title { background:#e8e8ec; text-align:center; padding:26px 24px 22px; border-bottom:1px solid #d0d0d8; margin-bottom:20px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#111 !important; text-transform:uppercase; margin-bottom:6px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; color:#111 !important; margin-bottom:4px; }
+  .page-sub { font-size:13px; color:#444 !important; font-style:italic; }
+
+  /* CARD */
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:22px; margin-bottom:14px; }
+  .card-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+
+  /* INPUTS */
+  .input-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--silver-lo); text-transform:uppercase; }
+  .field-hint  { font-size:12px; color:var(--silver-lo); font-style:italic; }
+  .input-wrap  { position:relative; display:flex; align-items:center; }
+  .input-sfx   { position:absolute; right:10px; font-family:'Space Mono',monospace; font-size:11px; color:var(--silver-lo); pointer-events:none; }
+  .f-input { background:#e8e8e8; border:1px solid #ccc; border-radius:3px; color:#111; font-family:'Space Mono',monospace; font-size:14px; font-weight:700; padding:10px 36px 10px 12px; width:100%; outline:none; transition:border-color 0.2s; }
+  .f-input:focus { border-color:#888; background:#f2f2f2; }
+
+  /* SLIDER */
+  input[type="range"] { width:100%; -webkit-appearance:none; height:4px; background:var(--border); border-radius:2px; outline:none; cursor:pointer; margin-top:6px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--silver); border:2px solid var(--bg2); cursor:pointer; }
+  .slider-val { font-family:'Space Mono',monospace; font-size:16px; font-weight:700; color:var(--silver); margin-top:4px; }
+
+  /* MODE SELECTOR */
+  .mode-row { display:flex; gap:8px; margin-bottom:16px; }
+  .mode-btn { flex:1; padding:8px; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:1px; cursor:pointer; transition:all 0.2s; text-align:center; }
+  .mode-btn.active { border-color:var(--gold); background:var(--gold-dim); color:var(--gold); }
+
+  /* SIMULATE BUTTON */
+  .btn-sim { width:100%; margin-top:14px; padding:14px; background:var(--silver); color:var(--bg); font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:4px; border:none; border-radius:3px; cursor:pointer; transition:background 0.2s; }
+  .btn-sim:hover { background:#e0dcd4; }
+
+  /* SUMMARY STATS */
+  .summary-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .sum-box { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:12px 14px; text-align:center; }
+  .sum-label { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:2px; color:var(--silver-lo); margin-bottom:4px; }
+  .sum-val { font-family:'Space Mono',monospace; font-size:15px; font-weight:700; }
+  .sum-val.green { color:var(--green); }
+  .sum-val.red   { color:var(--red); }
+  .sum-val.gold  { color:var(--gold); }
+  .sum-val.warn  { color:var(--warn); }
+
+  /* CHART */
+  .chart-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:18px 18px 12px; margin-bottom:14px; }
+  .chart-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+  .chart-legend { display:flex; gap:14px; }
+  .legend-item { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--silver-lo); }
+  .legend-dot { width:8px; height:8px; border-radius:50%; }
+  canvas { width:100% !important; }
+
+  /* ZONE TABLE */
+  .zone-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(200,196,188,0.06); }
+  .zone-row:last-child { border-bottom:none; }
+  .zone-bar-wrap { flex:1; height:8px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .zone-bar { height:100%; border-radius:4px; transition:width 0.6s ease; }
+  .zone-label { font-family:'Space Mono',monospace; font-size:9px; color:var(--silver-dim); min-width:80px; }
+  .zone-val { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; min-width:70px; text-align:right; }
+
+  /* ALERT */
+  .alert { padding:11px 14px; border-radius:3px; border:1px solid; margin-bottom:14px; font-size:13px; line-height:1.5; display:none; }
+  .alert.show { display:block; }
+  .alert.ok   { background:var(--green-dim); border-color:rgba(90,170,122,0.3); color:#80c8a0; }
+  .alert.warn { background:var(--warn-dim);  border-color:rgba(200,148,58,0.3); color:#d4a870; }
+  .alert.bad  { background:var(--red-dim);   border-color:rgba(192,85,85,0.3);  color:#e08080; }
+  .alert strong { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; display:block; margin-bottom:3px; }
+
+  /* COMPARISON TABLE */
+  .cmp-table { width:100%; border-collapse:collapse; }
+  .cmp-table th { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:2px; color:var(--silver-lo); text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); }
+  .cmp-table td { font-family:'Space Mono',monospace; font-size:10px; padding:7px 8px; border-bottom:1px solid rgba(200,196,188,0.06); color:var(--silver-dim); }
+  .cmp-table tr.current td { color:var(--silver); font-weight:700; background:rgba(200,196,188,0.04); }
+  .cmp-table td.green { color:var(--green); }
+  .cmp-table td.warn  { color:var(--warn); }
+  .cmp-table td.red   { color:var(--red); }
+
+  .btn-reset { display:block; margin:10px auto 0; padding:10px 22px; background:none; border:1px solid var(--border); color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+  .btn-reset:hover { border-color:var(--border-hi); color:var(--silver); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.3s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Simulador de Drawdown</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Gestión de Riesgo</div>
+    <h1 class="page-h1">Simulador de Drawdown</h1>
+    <p class="page-sub">Visualiza cuánto aguanta tu cuenta antes de llegar a niveles críticos — y cuánto necesitas para recuperarte</p>
+  </div>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <div class="card-title">Parámetros de tu cuenta</div>
+
+    <div class="mode-row">
+      <button class="mode-btn active" id="mode-consecutive" onclick="setMode('consecutive')">Stops consecutivos</button>
+      <button class="mode-btn" id="mode-winrate" onclick="setMode('winrate')">Simulación por win rate</button>
+    </div>
+
+    <div class="input-grid">
+
+      <div class="field">
+        <div class="field-label">Capital inicial</div>
+        <div class="input-wrap">
+          <input type="text" class="f-input" id="i-capital" placeholder="25,000" inputmode="numeric" oninput="formatCapital();simulate()">
+          <span class="input-sfx">$</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Riesgo por trade</div>
+        <div class="field-hint">% del capital arriesgado</div>
+        <input type="range" id="i-risk" min="0.25" max="5" step="0.25" value="1" oninput="updateRiskLabel();simulate()">
+        <div class="slider-val" id="risk-label">1%</div>
+      </div>
+
+      <!-- MODO: STOPS CONSECUTIVOS -->
+      <div class="field" id="field-stops">
+        <div class="field-label">Stops consecutivos a simular</div>
+        <input type="range" id="i-stops" min="1" max="30" step="1" value="10" oninput="updateStopsLabel();simulate()">
+        <div class="slider-val" id="stops-label">10 stops</div>
+      </div>
+
+      <!-- MODO: WIN RATE -->
+      <div class="field" id="field-winrate" style="display:none;">
+        <div class="field-label">Win Rate del sistema</div>
+        <input type="range" id="i-winrate" min="20" max="80" step="5" value="50" oninput="updateWRLabel();simulate()">
+        <div class="slider-val" id="wr-label">50%</div>
+      </div>
+
+      <div class="field" id="field-trades" style="display:none;">
+        <div class="field-label">Número de trades</div>
+        <input type="range" id="i-trades" min="10" max="200" step="10" value="50" oninput="updateTradesLabel();simulate()">
+        <div class="slider-val" id="trades-label">50 trades</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ALERT -->
+  <div class="alert" id="main-alert">
+    <strong id="alert-title">—</strong>
+    <span id="alert-desc">—</span>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-grid" id="summary-grid" style="display:none;">
+    <div class="sum-box">
+      <div class="sum-label">Capital final</div>
+      <div class="sum-val" id="s-final">—</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Drawdown máximo</div>
+      <div class="sum-val red" id="s-dd">—%</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Recuperación necesaria</div>
+      <div class="sum-val warn" id="s-recovery">—%</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Pérdida en $</div>
+      <div class="sum-val red" id="s-loss">—</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Capital mínimo alcanzado</div>
+      <div class="sum-val red" id="s-min">—</div>
+    </div>
+    <div class="sum-box">
+      <div class="sum-label">Regla del 1% aguanta</div>
+      <div class="sum-val green" id="s-safe">—</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="chart-wrap" id="chart-wrap" style="display:none;">
+    <div class="chart-title">
+      <span>Curva de capital simulada</span>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#5aaa7a"></div>Capital</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c05555"></div>Drawdown</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(200,169,110,0.4)"></div>Capital inicial</div>
+      </div>
+    </div>
+    <canvas id="myChart" height="200"></canvas>
+  </div>
+
+  <!-- ZONE ANALYSIS -->
+  <div class="card" id="zone-card" style="display:none;">
+    <div class="card-title">Análisis por zonas de riesgo</div>
+    <div id="zone-rows"></div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="card" id="cmp-card" style="display:none;">
+    <div class="card-title">Tu riesgo vs niveles de referencia</div>
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>RIESGO/TRADE</th>
+          <th>DD TRAS 10 STOPS</th>
+          <th>CAPITAL RESTANTE</th>
+          <th>RECUPERACIÓN</th>
+          <th>EVALUACIÓN</th>
+        </tr>
+      </thead>
+      <tbody id="cmp-tbody"></tbody>
+    </table>
+    <p style="font-size:12px;color:var(--silver-lo);font-style:italic;margin-top:10px;">La regla del 1% garantiza que 10 stops consecutivos solo producen un drawdown del ~9.5% — siempre recuperable.</p>
+  </div>
+
+  <button class="btn-reset" onclick="resetAll()">↺ Nueva simulación</button>
+
+</main>
+
+<script>
+  let mode = 'consecutive';
+  let chart = null;
+
+  function setMode(m) {
+    mode = m;
+    document.getElementById('mode-consecutive').className = 'mode-btn'+(m==='consecutive'?' active':'');
+    document.getElementById('mode-winrate').className = 'mode-btn'+(m==='winrate'?' active':'');
+    document.getElementById('field-stops').style.display = m==='consecutive'?'flex':'none';
+    document.getElementById('field-winrate').style.display = m==='winrate'?'flex':'none';
+    document.getElementById('field-trades').style.display = m==='winrate'?'flex':'none';
+    simulate();
+  }
+
+  function pf(v) { return parseFloat(String(v).replace(/,/g,''))||0; }
+  function fmt(n,d=0) { return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function cur(n) { return '$'+fmt(n); }
+
+  function updateRiskLabel()   { document.getElementById('risk-label').textContent   = parseFloat(document.getElementById('i-risk').value).toFixed(2).replace(/\.?0+$/,'')+'%'; }
+  function updateStopsLabel()  { document.getElementById('stops-label').textContent  = document.getElementById('i-stops').value+' stops'; }
+  function updateWRLabel()     { document.getElementById('wr-label').textContent     = document.getElementById('i-winrate').value+'%'; }
+  function updateTradesLabel() { document.getElementById('trades-label').textContent = document.getElementById('i-trades').value+' trades'; }
+
+  function formatCapital() {
+    const el = document.getElementById('i-capital');
+    const digits = el.value.replace(/[^0-9]/g,'');
+    if (!digits) return;
+    el.value = parseInt(digits,10).toLocaleString('en-US');
+  }
+
+  function simulate() {
+    const capital  = pf(document.getElementById('i-capital').value);
+    const riskPct  = parseFloat(document.getElementById('i-risk').value)/100;
+    if (!capital) { hideResults(); return; }
+
+    let equity = [capital];
+    let labels = ['Inicio'];
+
+    if (mode === 'consecutive') {
+      const stops = parseInt(document.getElementById('i-stops').value);
+      let cur = capital;
+      for (let i=1; i<=stops; i++) {
+        cur = cur*(1-riskPct);
+        equity.push(cur);
+        labels.push('Stop '+i);
+      }
+    } else {
+      const wr = parseInt(document.getElementById('i-winrate').value)/100;
+      const trades = parseInt(document.getElementById('i-trades').value);
+      let cur = capital;
+      // Simulate with 1.5R win / 1R loss randomly weighted
+      for (let i=1; i<=trades; i++) {
+        const isWin = Math.random() < wr;
+        if (isWin) cur = cur*(1+riskPct*1.5);
+        else       cur = cur*(1-riskPct);
+        equity.push(Math.max(cur,0));
+        labels.push('T'+i);
+      }
+    }
+
+    // Calculations
+    const finalCap = equity[equity.length-1];
+    const minCap   = Math.min(...equity);
+    const maxDD    = ((capital - minCap)/capital)*100;
+    const lossAmt  = capital - finalCap;
+    const recovery = maxDD > 0 ? (maxDD/(100-maxDD))*100 : 0;
+
+    // Safe stops with 1% rule
+    let safeCount = 0;
+    let tmp = capital;
+    while (tmp > capital*0.9 && safeCount < 100) {
+      tmp *= (1-0.01);
+      safeCount++;
+    }
+
+    // Show summary
+    document.getElementById('summary-grid').style.display = 'grid';
+    const finalCls = finalCap >= capital ? 'green' : maxDD > 20 ? 'red' : 'warn';
+    document.getElementById('s-final').textContent    = cur(finalCap);
+    document.getElementById('s-final').className      = 'sum-val '+finalCls;
+    document.getElementById('s-dd').textContent       = maxDD.toFixed(1)+'%';
+    document.getElementById('s-recovery').textContent = recovery.toFixed(1)+'%';
+    document.getElementById('s-loss').textContent     = '-'+cur(Math.max(lossAmt,0));
+    document.getElementById('s-min').textContent      = cur(minCap);
+    document.getElementById('s-safe').textContent     = '~'+safeCount+' stops';
+
+    // Alert
+    const alert = document.getElementById('main-alert');
+    alert.className = 'alert show fade-in';
+    if (maxDD <= 10) {
+      alert.classList.add('ok');
+      document.getElementById('alert-title').textContent = 'ZONA SEGURA — DRAWDOWN CONTROLADO';
+      document.getElementById('alert-desc').textContent  = `Un drawdown del ${maxDD.toFixed(1)}% es completamente manejable. Requiere ganar solo el ${recovery.toFixed(1)}% para recuperarte. Sigue ejecutando el protocolo con confianza.`;
+    } else if (maxDD <= 20) {
+      alert.classList.add('warn');
+      document.getElementById('alert-title').textContent = 'ZONA DE PRECAUCIÓN — REVISAR EJECUCIÓN';
+      document.getElementById('alert-desc').textContent  = `Un drawdown del ${maxDD.toFixed(1)}% exige ganar el ${recovery.toFixed(1)}% para recuperarte. Reducir el tamaño de posición al 50% hasta que el sistema vuelva a funcionar normalmente.`;
+    } else {
+      alert.classList.add('bad');
+      document.getElementById('alert-title').textContent = 'ZONA DE PELIGRO — DETENER OPERATIVA';
+      document.getElementById('alert-desc').textContent  = `Un drawdown del ${maxDD.toFixed(1)}% requiere ganar el ${recovery.toFixed(1)}% para recuperarte. Detener operativa real. Hacer paper trading hasta identificar la causa del problema.`;
+    }
+
+    // Chart
+    document.getElementById('chart-wrap').style.display = 'block';
+    drawChart(labels, equity, capital);
+
+    // Zone analysis
+    document.getElementById('zone-card').style.display = 'block';
+    const zones = [
+      { label:'Zona segura (< 10%)',     color:'#5aaa7a', threshold:capital*0.90 },
+      { label:'Zona precaución (10–20%)',color:'#c8943a', threshold:capital*0.80 },
+      { label:'Zona peligro (20–30%)',   color:'#c05555', threshold:capital*0.70 },
+      { label:'Zona crítica (> 30%)',    color:'#8a0000', threshold:capital*0.50 },
+    ];
+    const minPct = (minCap/capital)*100;
+    let zoneHtml = '';
+    zones.forEach(z => {
+      const pct = Math.min(Math.max(((capital-z.threshold)/capital)*100,0),100);
+      const reached = minCap <= z.threshold ? 'ALCANZADA' : 'No alcanzada';
+      const reachedCls = minCap <= z.threshold ? 'color:'+z.color : 'color:var(--silver-lo)';
+      zoneHtml += `<div class="zone-row">
+        <span class="zone-label" style="color:${z.color}">${z.label}</span>
+        <div class="zone-bar-wrap"><div class="zone-bar" style="background:${z.color};width:${pct}%"></div></div>
+        <span class="zone-val" style="${reachedCls}">${reached}</span>
+      </div>`;
+    });
+    document.getElementById('zone-rows').innerHTML = zoneHtml;
+
+    // Comparison table
+    document.getElementById('cmp-card').style.display = 'block';
+    const risks = [0.5, 1, 1.5, 2, 3, 5];
+    let cmpHtml = '';
+    risks.forEach(r => {
+      const dd = (1-Math.pow(1-r/100,10))*100;
+      const rem = 100-dd;
+      const rec = dd/(100-dd)*100;
+      const cls = dd<10?'green':dd<20?'warn':'red';
+      const verdict = dd<10?'✓ Óptimo':dd<20?'⚠ Elevado':'✕ Peligroso';
+      const isCurrent = Math.abs(r - riskPct*100) < 0.1;
+      cmpHtml += `<tr class="${isCurrent?'current':''}">
+        <td>${r}%${isCurrent?' ← tú':''}</td>
+        <td class="${cls}">${dd.toFixed(1)}%</td>
+        <td>$${capital>0?fmt(capital*(rem/100)):'-'}</td>
+        <td class="${cls}">+${rec.toFixed(1)}%</td>
+        <td class="${cls}">${verdict}</td>
+      </tr>`;
+    });
+    document.getElementById('cmp-tbody').innerHTML = cmpHtml;
+  }
+
+  function drawChart(labels, equity, initial) {
+    const canvas = document.getElementById('myChart');
+    const ctx = canvas.getContext('2d');
+
+    // Compute drawdown series
+    let peak = equity[0];
+    const ddSeries = equity.map(v => {
+      if (v > peak) peak = v;
+      return -((peak-v)/initial)*100;
+    });
+
+    // Clear previous
+    if (chart) { chart.destroy(); chart = null; }
+
+    // Manual draw — no external libs
+    const W = canvas.offsetWidth || 680;
+    const H = 220;
+    canvas.width = W;
+    canvas.height = H;
+
+    const pad = { top:20, right:20, bottom:30, left:60 };
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top - pad.bottom;
+
+    const minE = Math.min(...equity);
+    const maxE = Math.max(...equity);
+    const rangeE = maxE - minE || 1;
+
+    ctx.clearRect(0,0,W,H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(200,196,188,0.08)';
+    ctx.lineWidth = 1;
+    for (let i=0; i<=4; i++) {
+      const y = pad.top + (plotH/4)*i;
+      ctx.beginPath(); ctx.moveTo(pad.left,y); ctx.lineTo(W-pad.right,y); ctx.stroke();
+    }
+
+    // Initial capital line
+    const y0 = pad.top + plotH - ((initial-minE)/rangeE)*plotH;
+    ctx.strokeStyle = 'rgba(200,169,110,0.35)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,6]);
+    ctx.beginPath(); ctx.moveTo(pad.left,y0); ctx.lineTo(W-pad.right,y0); ctx.stroke();
+    ctx.setLineDash([]);
+
+    const n = equity.length;
+    const xStep = plotW/(n-1||1);
+
+    // Drawdown fill
+    ctx.beginPath();
+    equity.forEach((v,i) => {
+      const x = pad.left + i*xStep;
+      const y = pad.top + plotH - ((v-minE)/rangeE)*plotH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.lineTo(pad.left+(n-1)*xStep, pad.top+plotH);
+    ctx.lineTo(pad.left, pad.top+plotH);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(192,85,85,0.08)';
+    ctx.fill();
+
+    // Equity line
+    ctx.beginPath();
+    equity.forEach((v,i) => {
+      const x = pad.left + i*xStep;
+      const y = pad.top + plotH - ((v-minE)/rangeE)*plotH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.strokeStyle = '#5aaa7a';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+
+    // Equity area
+    ctx.beginPath();
+    equity.forEach((v,i) => {
+      const x = pad.left + i*xStep;
+      const y = pad.top + plotH - ((v-minE)/rangeE)*plotH;
+      i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    });
+    ctx.lineTo(pad.left+(n-1)*xStep, pad.top+plotH);
+    ctx.lineTo(pad.left, pad.top+plotH);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(90,170,122,0.08)';
+    ctx.fill();
+
+    // Y axis labels
+    ctx.fillStyle = 'rgba(140,136,128,0.8)';
+    ctx.font = '9px Space Mono, monospace';
+    ctx.textAlign = 'right';
+    for (let i=0; i<=4; i++) {
+      const val = minE + (rangeE/4)*(4-i);
+      const y = pad.top + (plotH/4)*i;
+      ctx.fillText('$'+fmt(val), pad.left-6, y+3);
+    }
+
+    // X axis labels — show max 6
+    ctx.textAlign = 'center';
+    const step = Math.max(1, Math.floor(n/6));
+    for (let i=0; i<n; i+=step) {
+      const x = pad.left + i*xStep;
+      ctx.fillText(labels[i]||'', x, H-8);
+    }
+  }
+
+  function hideResults() {
+    document.getElementById('summary-grid').style.display = 'none';
+    document.getElementById('chart-wrap').style.display = 'none';
+    document.getElementById('zone-card').style.display = 'none';
+    document.getElementById('cmp-card').style.display = 'none';
+    document.getElementById('main-alert').className = 'alert';
+  }
+
+  function resetAll() {
+    document.getElementById('i-capital').value = '';
+    document.getElementById('i-risk').value = 1;
+    document.getElementById('i-stops').value = 10;
+    document.getElementById('i-winrate').value = 50;
+    document.getElementById('i-trades').value = 50;
+    updateRiskLabel(); updateStopsLabel(); updateWRLabel(); updateTradesLabel();
+    hideResults();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  // Init
+  updateRiskLabel(); updateStopsLabel(); updateWRLabel(); updateTradesLabel();
+  window.addEventListener('resize', () => { if (pf(document.getElementById('i-capital').value)) simulate(); });
+</script>
+</body>
+</html>

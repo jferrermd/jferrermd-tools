@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Expectancy — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.3);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --red:#c05555; --warn:#c8943a;
+    --green-dim:rgba(90,170,122,0.15); --red-dim:rgba(192,85,85,0.15);
+    --warn-dim:rgba(200,148,58,0.15); --gold-dim:rgba(200,169,110,0.15);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+
+  main { width:100%; max-width:720px; padding:0 18px 80px; }
+
+  .page-title { background:#e8e8ec; text-align:center; padding:26px 24px 22px; border-bottom:1px solid #d0d0d8; margin-bottom:20px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#111 !important; text-transform:uppercase; margin-bottom:6px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; color:#111 !important; margin-bottom:4px; }
+  .page-sub { font-size:13px; color:#444 !important; font-style:italic; }
+
+  /* FORMULA BOX */
+  .formula-box { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:18px 20px; margin-bottom:16px; text-align:center; }
+  .formula-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:10px; }
+  .formula-text { font-family:'Space Mono',monospace; font-size:13px; color:var(--silver); line-height:1.8; }
+  .formula-text .f-green { color:var(--green); }
+  .formula-text .f-red   { color:var(--red); }
+  .formula-text .f-gold  { color:var(--gold); }
+
+  /* CARD */
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:22px 22px; margin-bottom:14px; }
+  .card-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+
+  /* INPUT GRID */
+  .input-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  .field.full { grid-column:1/-1; }
+  .field-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--silver-lo); text-transform:uppercase; }
+  .field-hint { font-size:12px; color:var(--silver-lo); font-style:italic; margin-top:1px; }
+
+  .input-wrap { position:relative; display:inline-flex; align-items:center; }
+  .input-sfx { position:absolute; right:10px; font-family:'Space Mono',monospace; font-size:11px; color:var(--silver-lo); pointer-events:none; }
+  .f-input { background:#e8e8e8; border:1px solid #ccc; border-radius:3px; color:#111; font-family:'Space Mono',monospace; font-size:14px; font-weight:700; padding:10px 32px 10px 12px; width:100%; outline:none; transition:border-color 0.2s; }
+  .f-input:focus { border-color:#888; background:#f2f2f2; }
+  .f-input.error { border-color:var(--red); }
+
+  /* SLIDERS */
+  input[type="range"] { width:100%; -webkit-appearance:none; height:4px; background:var(--border); border-radius:2px; outline:none; cursor:pointer; margin-top:4px; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--silver); border:2px solid var(--bg2); cursor:pointer; }
+  .slider-val { font-family:'Space Mono',monospace; font-size:16px; font-weight:700; color:var(--silver); margin-top:4px; }
+
+  /* CALC BUTTON */
+  .btn-calc { width:100%; margin-top:16px; padding:14px; background:var(--silver); color:var(--bg); font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:4px; text-transform:uppercase; border:none; border-radius:3px; cursor:pointer; transition:background 0.2s; }
+  .btn-calc:hover { background:#e0dcd4; }
+
+  /* RESULT CARD */
+  .result-card { border-radius:4px; padding:26px 22px; margin-bottom:14px; border:2px solid; display:none; }
+  .result-card.show { display:block; }
+  .result-card.positivo { background:var(--green-dim); border-color:rgba(90,170,122,0.5); }
+  .result-card.neutro   { background:var(--warn-dim);  border-color:rgba(200,148,58,0.5); }
+  .result-card.negativo { background:var(--red-dim);   border-color:rgba(192,85,85,0.5); }
+
+  .result-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-dim); margin-bottom:8px; text-align:center; }
+  .result-score-row { display:flex; align-items:baseline; justify-content:center; gap:8px; margin-bottom:6px; }
+  .result-number { font-family:'Playfair Display',serif; font-size:72px; font-weight:900; line-height:1; letter-spacing:-2px; }
+  .result-unit   { font-family:'Space Mono',monospace; font-size:18px; }
+  .result-card.positivo .result-number { color:var(--green); }
+  .result-card.positivo .result-unit   { color:var(--green); }
+  .result-card.neutro   .result-number { color:var(--warn);  }
+  .result-card.neutro   .result-unit   { color:var(--warn);  }
+  .result-card.negativo .result-number { color:var(--red);   }
+  .result-card.negativo .result-unit   { color:var(--red);   }
+
+  .result-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; text-align:center; margin-bottom:6px; }
+  .result-card.positivo .result-title { color:var(--green); }
+  .result-card.neutro   .result-title { color:var(--warn);  }
+  .result-card.negativo .result-title { color:var(--red);   }
+  .result-desc { font-size:14px; color:var(--silver-dim); font-style:italic; text-align:center; line-height:1.6; }
+
+  /* STATS BREAKDOWN */
+  .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; display:none; }
+  .stats-grid.show { display:grid; }
+  .stat-box { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:12px 14px; text-align:center; }
+  .stat-label { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:2px; color:var(--silver-lo); margin-bottom:4px; }
+  .stat-value { font-family:'Space Mono',monospace; font-size:15px; font-weight:700; }
+  .stat-value.green { color:var(--green); }
+  .stat-value.red   { color:var(--red); }
+  .stat-value.gold  { color:var(--gold); }
+  .stat-value.warn  { color:var(--warn); }
+
+  /* PROJECTION TABLE */
+  .proj-card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:18px 20px; margin-bottom:14px; display:none; }
+  .proj-card.show { display:block; }
+  .proj-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+  .proj-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(200,196,188,0.06); }
+  .proj-row:last-child { border-bottom:none; }
+  .proj-label { font-family:'Space Mono',monospace; font-size:10px; color:var(--silver-dim); }
+  .proj-label span { display:block; font-family:'EB Garamond',serif; font-size:12px; color:var(--silver-lo); font-style:italic; margin-top:1px; letter-spacing:0; }
+  .proj-val { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; text-align:right; }
+  .proj-val.green { color:var(--green); }
+  .proj-val.red   { color:var(--red); }
+  .proj-val.gold  { color:var(--gold); }
+
+  /* DRAWDOWN TABLE */
+  .dd-table { width:100%; border-collapse:collapse; margin-top:12px; }
+  .dd-table th { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:2px; color:var(--silver-lo); text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); }
+  .dd-table td { font-family:'Space Mono',monospace; font-size:10px; padding:7px 8px; border-bottom:1px solid rgba(200,196,188,0.06); color:var(--silver-dim); }
+  .dd-table tr:last-child td { border-bottom:none; }
+  .dd-table td.highlight { font-weight:700; }
+  .dd-table td.green { color:var(--green); }
+  .dd-table td.warn  { color:var(--warn); }
+  .dd-table td.red   { color:var(--red); }
+
+  /* VERDICT BAND */
+  .verdict { border-radius:3px; padding:12px 16px; display:flex; align-items:flex-start; gap:10px; margin-bottom:14px; border:1px solid; display:none; }
+  .verdict.show  { display:flex; }
+  .verdict.go    { background:var(--green-dim); border-color:rgba(90,170,122,0.3); }
+  .verdict.caution{ background:var(--warn-dim); border-color:rgba(200,148,58,0.3); }
+  .verdict.stop  { background:var(--red-dim);   border-color:rgba(192,85,85,0.3); }
+  .verdict-icon  { font-size:20px; flex-shrink:0; margin-top:2px; }
+  .verdict-text  { font-size:14px; line-height:1.5; }
+  .verdict-text strong { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; display:block; margin-bottom:3px; }
+  .verdict.go      .verdict-text strong { color:var(--green); }
+  .verdict.caution .verdict-text strong { color:var(--warn); }
+  .verdict.stop    .verdict-text strong { color:var(--red); }
+
+  /* RESET */
+  .btn-reset { display:block; margin:8px auto 0; padding:10px 22px; background:none; border:1px solid var(--border); color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+  .btn-reset:hover { border-color:var(--border-hi); color:var(--silver); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.3s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Expectancy</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Matemática del Sistema</div>
+    <h1 class="page-h1">Calculadora de Expectancy</h1>
+    <p class="page-sub">¿Tu sistema tiene ventaja estadística real? Introduce tus datos y descúbrelo.</p>
+  </div>
+
+  <!-- FORMULA -->
+  <div class="formula-box">
+    <div class="formula-label">La fórmula que te devuelve la paz</div>
+    <div class="formula-text">
+      Expectancy = (<span class="f-green">Win Rate × R promedio ganador</span>) − (<span class="f-red">Loss Rate × R promedio perdedor</span>)
+    </div>
+    <div style="font-size:12px;color:var(--silver-lo);font-style:italic;margin-top:8px;">
+      Si el resultado es positivo — tu sistema tiene ventaja. Si es negativo — necesita revisión antes de seguir arriesgando capital real.
+    </div>
+  </div>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <div class="card-title">Datos de tu sistema</div>
+    <div class="input-grid">
+
+      <div class="field">
+        <div class="field-label">Total de trades</div>
+        <div class="field-hint">Mínimo 30 para estadística válida</div>
+        <div class="input-wrap">
+          <input type="text" class="f-input" id="i-total" placeholder="50" inputmode="numeric" oninput="liveCalc()">
+          <span class="input-sfx">trades</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Trades ganadores</div>
+        <div class="field-hint">Número de operaciones con resultado positivo</div>
+        <div class="input-wrap">
+          <input type="text" class="f-input" id="i-wins" placeholder="27" inputmode="numeric" oninput="liveCalc()">
+          <span class="input-sfx">trades</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">R promedio ganador</div>
+        <div class="field-hint">Promedio de R en tus trades positivos</div>
+        <div class="input-wrap">
+          <input type="text" class="f-input" id="i-avgwin" placeholder="1.8" inputmode="decimal" oninput="liveCalc()">
+          <span class="input-sfx">R</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">R promedio perdedor</div>
+        <div class="field-hint">Promedio de R en tus trades negativos (positivo)</div>
+        <div class="input-wrap">
+          <input type="text" class="f-input" id="i-avgloss" placeholder="1.0" inputmode="decimal" oninput="liveCalc()">
+          <span class="input-sfx">R</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Capital de cuenta</div>
+        <div class="field-hint">Para calcular proyección en dólares</div>
+        <div class="input-wrap">
+          <input type="text" class="f-input" id="i-capital" placeholder="25,000" inputmode="numeric" oninput="liveCalc()">
+          <span class="input-sfx">$</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Riesgo por trade</div>
+        <div class="field-hint">Porcentaje de capital arriesgado por trade</div>
+        <div style="margin-top:6px;">
+          <input type="range" id="i-risk" min="0.25" max="3" step="0.25" value="1" oninput="updateRiskLabel();liveCalc()">
+          <div class="slider-val" id="risk-label">1%</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Trades a proyectar</div>
+        <div class="field-hint">¿Cuántos trades quieres simular?</div>
+        <div style="margin-top:6px;">
+          <input type="range" id="i-projection" min="10" max="500" step="10" value="100" oninput="updateProjLabel();liveCalc()">
+          <div class="slider-val" id="proj-label">100 trades</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LIVE RESULT -->
+  <div class="result-card fade-in" id="result-card">
+    <div class="result-label">EXPECTANCY POR TRADE</div>
+    <div class="result-score-row">
+      <div class="result-number" id="res-number">—</div>
+      <div class="result-unit" id="res-unit">R</div>
+    </div>
+    <div class="result-title" id="res-title">Introduce tus datos</div>
+    <div class="result-desc" id="res-desc">Completa los campos para calcular si tu sistema tiene ventaja estadística real.</div>
+  </div>
+
+  <!-- STATS BREAKDOWN -->
+  <div class="stats-grid" id="stats-grid">
+    <div class="stat-box">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value green" id="s-winrate">—%</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Loss Rate</div>
+      <div class="stat-value red" id="s-lossrate">—%</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Ratio G/P</div>
+      <div class="stat-value gold" id="s-ratio">—</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">R prom. ganador</div>
+      <div class="stat-value green" id="s-avgwin">—R</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">R prom. perdedor</div>
+      <div class="stat-value red" id="s-avgloss">—R</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Confianza estadística</div>
+      <div class="stat-value warn" id="s-confidence">—</div>
+    </div>
+  </div>
+
+  <!-- VERDICT -->
+  <div class="verdict" id="verdict">
+    <div class="verdict-icon" id="v-icon">—</div>
+    <div class="verdict-text">
+      <strong id="v-title">—</strong>
+      <span id="v-desc">—</span>
+    </div>
+  </div>
+
+  <!-- PROJECTION -->
+  <div class="proj-card" id="proj-card">
+    <div class="proj-title">Proyección a <span id="proj-n">100</span> trades</div>
+    <div class="proj-row">
+      <div class="proj-label">R total esperado <span>Expectancy × número de trades</span></div>
+      <div class="proj-val gold" id="p-rtotal">—</div>
+    </div>
+    <div class="proj-row">
+      <div class="proj-label">Valor de 1R en dólares <span>Capital × Riesgo%</span></div>
+      <div class="proj-val gold" id="p-1r">—</div>
+    </div>
+    <div class="proj-row">
+      <div class="proj-label">Ganancia esperada en $ <span>R total × valor de 1R</span></div>
+      <div class="proj-val green" id="p-gains">—</div>
+    </div>
+    <div class="proj-row">
+      <div class="proj-label">Retorno sobre capital <span>Ganancia / Capital</span></div>
+      <div class="proj-val green" id="p-roi">—</div>
+    </div>
+    <div class="proj-row">
+      <div class="proj-label">Trades ganadores esperados <span>Win Rate × trades proyectados</span></div>
+      <div class="proj-val green" id="p-wins">—</div>
+    </div>
+    <div class="proj-row">
+      <div class="proj-label">Trades perdedores esperados <span>Loss Rate × trades proyectados</span></div>
+      <div class="proj-val red" id="p-losses">—</div>
+    </div>
+
+    <!-- DRAWDOWN TABLE -->
+    <div style="margin-top:16px; padding-top:14px; border-top:1px solid var(--border);">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--silver-lo);margin-bottom:10px;">RESISTENCIA A RACHAS PERDEDORAS</div>
+      <table class="dd-table">
+        <thead>
+          <tr>
+            <th>STOPS CONSECUTIVOS</th>
+            <th>DRAWDOWN %</th>
+            <th>CAPITAL RESTANTE</th>
+            <th>RECUPERACIÓN NECESARIA</th>
+            <th>ESTADO</th>
+          </tr>
+        </thead>
+        <tbody id="dd-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SCENARIOS COMPARISON -->
+  <div class="proj-card" id="scenarios-card" style="display:none;">
+    <div class="proj-title">Tu sistema vs escenarios de referencia</div>
+    <table class="dd-table">
+      <thead>
+        <tr>
+          <th>ESCENARIO</th>
+          <th>WIN RATE</th>
+          <th>R PROM+</th>
+          <th>R PROM−</th>
+          <th>EXPECTANCY</th>
+          <th>RESULTADO</th>
+        </tr>
+      </thead>
+      <tbody id="scenarios-tbody"></tbody>
+    </table>
+  </div>
+
+  <button class="btn-reset" onclick="resetAll()">↺ Nueva calculación</button>
+
+</main>
+
+<script>
+  function pf(v) { return parseFloat(String(v).replace(/,/g,'')) || 0; }
+  function fmt(n,d=2) { return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function cur(n) { return '$'+fmt(Math.abs(n)); }
+  function sign(n) { return n>=0?'+':'-'; }
+
+  function updateRiskLabel() {
+    const v = parseFloat(document.getElementById('i-risk').value);
+    document.getElementById('risk-label').textContent = v.toFixed(2).replace(/\.?0+$/,'')+'%';
+  }
+  function updateProjLabel() {
+    const v = parseInt(document.getElementById('i-projection').value);
+    document.getElementById('proj-label').textContent = v+' trades';
+  }
+
+  function liveCalc() {
+    const total    = pf(document.getElementById('i-total').value);
+    const wins     = pf(document.getElementById('i-wins').value);
+    const avgWin   = pf(document.getElementById('i-avgwin').value);
+    const avgLoss  = pf(document.getElementById('i-avgloss').value);
+    const capital  = pf(document.getElementById('i-capital').value);
+    const riskPct  = parseFloat(document.getElementById('i-risk').value)/100;
+    const projN    = parseInt(document.getElementById('i-projection').value);
+
+    if (!total||!wins||!avgWin||!avgLoss) {
+      resetResult(); return;
+    }
+    if (wins > total) { document.getElementById('i-wins').classList.add('error'); return; }
+    document.getElementById('i-wins').classList.remove('error');
+
+    const losses   = total - wins;
+    const winRate  = wins/total;
+    const lossRate = losses/total;
+    const exp      = (winRate*avgWin) - (lossRate*avgLoss);
+    const ratio    = avgWin/avgLoss;
+    const rVal1    = capital*riskPct;
+    const projR    = exp*projN;
+    const projGain = projR*rVal1;
+    const projROI  = capital>0?(projGain/capital*100):0;
+    const confidence = total>=100?'Alta':total>=50?'Media':total>=30?'Mínima':'Insuficiente';
+
+    // Stats grid
+    document.getElementById('s-winrate').textContent   = (winRate*100).toFixed(1)+'%';
+    document.getElementById('s-lossrate').textContent  = (lossRate*100).toFixed(1)+'%';
+    document.getElementById('s-ratio').textContent     = ratio.toFixed(2)+'x';
+    document.getElementById('s-avgwin').textContent    = '+'+avgWin.toFixed(2)+'R';
+    document.getElementById('s-avgloss').textContent   = '-'+avgLoss.toFixed(2)+'R';
+    document.getElementById('s-confidence').textContent= confidence;
+    document.getElementById('s-confidence').className  = 'stat-value '+(total>=50?'green':total>=30?'warn':'red');
+    document.getElementById('stats-grid').classList.add('show');
+
+    // Main result
+    const rc = document.getElementById('result-card');
+    const rn = document.getElementById('res-number');
+    const ru = document.getElementById('res-unit');
+    rc.className = 'result-card show fade-in';
+    rn.textContent = (exp>=0?'+':'')+exp.toFixed(3);
+    ru.textContent = 'R / trade';
+
+    if (exp > 0.3) {
+      rc.classList.add('positivo');
+      document.getElementById('res-title').textContent = '✓ Sistema con ventaja sólida';
+      document.getElementById('res-desc').textContent  = `Tu sistema genera +${exp.toFixed(3)}R por trade ejecutado. Con disciplina consistente, cada trade tiene expectativa positiva. La matemática trabaja a tu favor.`;
+    } else if (exp > 0) {
+      rc.classList.add('positivo');
+      document.getElementById('res-title').textContent = '✓ Sistema rentable — ventaja estrecha';
+      document.getElementById('res-desc').textContent  = `Sistema con expectancy positiva (+${exp.toFixed(3)}R) pero estrecha. Funciona — y puede mejorarse aumentando el R promedio ganador o el win rate ligeramente.`;
+    } else if (exp === 0) {
+      rc.classList.add('neutro');
+      document.getElementById('res-title').textContent = '≈ Sistema neutro — las comisiones te destruyen';
+      document.getElementById('res-desc').textContent  = 'Expectancy en cero. Sin ventaja estadística. Las comisiones y el slippage convierten este sistema en negativo en la práctica. Necesita mejora urgente.';
+    } else if (exp > -0.3) {
+      rc.classList.add('negativo');
+      document.getElementById('res-title').textContent = '✕ Sistema negativo — revisar antes de continuar';
+      document.getElementById('res-desc').textContent  = `Tu sistema pierde ${Math.abs(exp).toFixed(3)}R por trade. No continuar con capital real hasta identificar qué factor está destruyendo la ventaja.`;
+    } else {
+      rc.classList.add('negativo');
+      document.getElementById('res-title').textContent = '✕ Sistema con pérdida severa — detener operativa';
+      document.getElementById('res-desc').textContent  = `Expectancy de ${exp.toFixed(3)}R por trade. El sistema está destruyendo capital sistemáticamente. Detener operativa real inmediatamente y revisar el protocolo.`;
+    }
+
+    // Verdict
+    const vd = document.getElementById('verdict');
+    vd.className = 'verdict show fade-in';
+    if (exp > 0) {
+      vd.classList.add('go');
+      document.getElementById('v-icon').textContent  = '✓';
+      document.getElementById('v-title').textContent = 'SISTEMA APROBADO — CONFIAR EN ÉL Y EJECUTARLO';
+      document.getElementById('v-desc').textContent  = total>=30
+        ? `Con ${total} trades de muestra y expectancy positiva, tienes evidencia suficiente para confiar en el sistema. Tu única responsabilidad ahora es ejecutarlo con disciplina — sin modificaciones, sin excepciones.`
+        : `Expectancy positiva pero con solo ${total} trades la muestra es pequeña. Continuar ejecutando sin cambios hasta llegar a 30+ trades para confirmar la ventaja con mayor certeza estadística.`;
+    } else if (exp >= -0.2) {
+      vd.classList.add('caution');
+      document.getElementById('v-icon').textContent  = '⚠';
+      document.getElementById('v-title').textContent = 'SISTEMA EN ZONA DE RIESGO — REVISAR CON DATOS';
+      document.getElementById('v-desc').textContent  = 'Expectancy negativa o muy cerca de cero. Revisar: ¿se está respetando el stop? ¿El R promedio perdedor es mayor de 1 porque se mueve el stop? ¿El win rate refleja entradas con criterio o impulsivas?';
+    } else {
+      vd.classList.add('stop');
+      document.getElementById('v-icon').textContent  = '✕';
+      document.getElementById('v-title').textContent = 'DETENER OPERATIVA REAL — REVISAR PROTOCOLO';
+      document.getElementById('v-desc').textContent  = 'La expectancy negativa severa indica un problema sistémico. Pasar a paper trading hasta identificar y corregir la causa raíz. No es cuestión de mercado — es cuestión de ejecución.';
+    }
+
+    // Projection
+    document.getElementById('proj-n').textContent = projN;
+    document.getElementById('p-rtotal').textContent = (projR>=0?'+':'')+fmt(projR)+' R';
+    document.getElementById('p-rtotal').className = 'proj-val '+(projR>=0?'gold':'red');
+    document.getElementById('p-1r').textContent = capital>0?cur(rVal1):'— (introduce capital)';
+    document.getElementById('p-gains').textContent = capital>0?(sign(projGain)+cur(projGain)):'— (introduce capital)';
+    document.getElementById('p-gains').className = 'proj-val '+(projGain>=0?'green':'red');
+    document.getElementById('p-roi').textContent = capital>0?((projROI>=0?'+':'')+fmt(projROI)+'%'):'—';
+    document.getElementById('p-roi').className = 'proj-val '+(projROI>=0?'green':'red');
+    document.getElementById('p-wins').textContent   = Math.round(winRate*projN)+' trades';
+    document.getElementById('p-losses').textContent = Math.round(lossRate*projN)+' trades';
+    document.getElementById('proj-card').classList.add('show');
+
+    // Drawdown table
+    const rows = [1,2,3,5,7,10];
+    let ddHtml = '';
+    rows.forEach(n => {
+      const dd = (1 - Math.pow(1-riskPct, n)) * 100;
+      const rem = 100 - dd;
+      const recovery = (dd/(100-dd))*100;
+      let cls = dd<10?'green':dd<20?'warn':'red';
+      let estado = dd<10?'✓ Controlable':dd<20?'⚠ Exigente':'✕ Peligroso';
+      ddHtml += `<tr>
+        <td class="highlight">${n} stop${n>1?'s':''}</td>
+        <td class="${cls} highlight">-${fmt(dd,1)}%</td>
+        <td>$${capital>0?fmt(capital*(rem/100),0):'—'}</td>
+        <td class="${cls}">+${fmt(recovery,1)}%</td>
+        <td class="${cls}">${estado}</td>
+      </tr>`;
+    });
+    document.getElementById('dd-tbody').innerHTML = ddHtml;
+
+    // Scenarios comparison
+    const myExp = exp;
+    const scenarios = [
+      ['Tu sistema', (winRate*100).toFixed(0)+'%', '+'+avgWin.toFixed(2)+'R', '-'+avgLoss.toFixed(2)+'R', exp, true],
+      ['Sistema 50/50 (2R)',   '50%', '+2.00R', '-1.00R', (0.5*2)-(0.5*1), false],
+      ['Sistema 40% (3R)',     '40%', '+3.00R', '-1.00R', (0.4*3)-(0.6*1), false],
+      ['Sistema 60% (1.5R)',   '60%', '+1.50R', '-1.00R', (0.6*1.5)-(0.4*1), false],
+      ['Trampa 80% (-4R)',     '80%', '+0.30R', '-4.00R', (0.8*0.3)-(0.2*4), false],
+    ];
+    let scHtml = '';
+    scenarios.forEach(([name, wr, rp, rl, e, isMe]) => {
+      const cls = e>0?'green':e<0?'red':'warn';
+      const verdict = e>0.3?'✓ Sólido':e>0?'✓ Positivo':e===0?'≈ Neutro':'✕ Negativo';
+      scHtml += `<tr style="${isMe?'background:rgba(200,196,188,0.05)':''}">
+        <td style="color:${isMe?'var(--silver)':'var(--silver-dim)'}; font-weight:${isMe?'700':'400'}">${name}</td>
+        <td>${wr}</td><td style="color:var(--green)">${rp}</td>
+        <td style="color:var(--red)">${rl}</td>
+        <td class="highlight ${cls}">${(e>=0?'+':'')+e.toFixed(3)}R</td>
+        <td class="${cls}">${verdict}</td>
+      </tr>`;
+    });
+    document.getElementById('scenarios-tbody').innerHTML = scHtml;
+    document.getElementById('scenarios-card').style.display = 'block';
+  }
+
+  function resetResult() {
+    document.getElementById('result-card').className = 'result-card';
+    document.getElementById('stats-grid').classList.remove('show');
+    document.getElementById('verdict').className = 'verdict';
+    document.getElementById('proj-card').classList.remove('show');
+    document.getElementById('scenarios-card').style.display = 'none';
+  }
+
+  function resetAll() {
+    ['i-total','i-wins','i-avgwin','i-avgloss','i-capital'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('i-risk').value = 1;
+    document.getElementById('i-projection').value = 100;
+    updateRiskLabel(); updateProjLabel();
+    resetResult();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  // Init
+  updateRiskLabel(); updateProjLabel();
+</script>
+</body>
+</html>

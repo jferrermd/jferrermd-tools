@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama de Flujo AMC — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.3);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --red:#c05555; --warn:#c8943a;
+    --green-dim:rgba(90,170,122,0.15); --red-dim:rgba(192,85,85,0.15);
+    --warn-dim:rgba(200,148,58,0.15); --gold-dim:rgba(200,169,110,0.15);
+    --purple:#8a7acc; --purple-dim:rgba(138,122,204,0.15);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+
+  main { width:100%; max-width:720px; padding:0 18px 80px; }
+
+  .page-title { background:#e8e8ec; text-align:center; padding:26px 24px 22px; border-bottom:1px solid #d0d0d8; margin-bottom:20px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#111 !important; text-transform:uppercase; margin-bottom:6px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; color:#111 !important; margin-bottom:4px; }
+  .page-sub { font-size:13px; color:#444 !important; font-style:italic; }
+
+  /* PROGRESS */
+  .progress-wrap { margin-bottom:18px; }
+  .progress-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); margin-bottom:5px; display:flex; justify-content:space-between; }
+  .progress-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--gold); border-radius:2px; transition:width 0.5s ease; width:0%; }
+
+  /* TIMELINE CONNECTOR */
+  .timeline-connector { display:flex; align-items:center; gap:10px; margin:6px 0; padding:0 8px; }
+  .tl-line { flex:1; height:1px; background:var(--border); }
+  .tl-label { font-family:'Space Mono',monospace; font-size:8px; color:var(--silver-lo); letter-spacing:2px; white-space:nowrap; }
+
+  /* PHASE HEADER */
+  .phase-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); margin-top:4px; }
+  .phase-badge { font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px; padding:4px 10px; border-radius:20px; }
+  .phase-badge.noche-amc { background:var(--purple-dim); color:var(--purple); border:1px solid rgba(138,122,204,0.3); }
+  .phase-badge.madrugada { background:var(--gold-dim); color:var(--gold); border:1px solid rgba(200,169,110,0.3); }
+  .phase-badge.pre       { background:var(--green-dim); color:var(--green); border:1px solid rgba(90,170,122,0.3); }
+  .phase-badge.apertura  { background:var(--red-dim); color:var(--red); border:1px solid rgba(192,85,85,0.3); }
+  .phase-badge.gestion   { background:var(--warn-dim); color:var(--warn); border:1px solid rgba(200,148,58,0.3); }
+  .phase-title { font-family:'Playfair Display',serif; font-size:17px; font-weight:700; color:var(--silver); }
+  .phase-time { font-family:'Space Mono',monospace; font-size:9px; color:var(--silver-lo); margin-left:auto; }
+
+  /* STEP CARD */
+  .step-card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; margin-bottom:8px; overflow:hidden; transition:border-color 0.2s; }
+  .step-card.done  { border-color:rgba(200,169,110,0.4); }
+  .step-card.skip  { opacity:0.4; }
+  .step-header { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; user-select:none; }
+  .step-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; font-size:10px; }
+  .step-card.done .step-check { background:var(--gold); border-color:var(--gold); color:#fff; }
+  .step-num  { font-family:'Space Mono',monospace; font-size:9px; color:var(--silver-lo); flex-shrink:0; min-width:18px; }
+  .step-title{ font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1px; color:var(--silver); flex:1; }
+  .step-tag  { font-family:'Space Mono',monospace; font-size:8px; padding:2px 7px; border-radius:10px; flex-shrink:0; }
+  .step-tag.obligatorio { background:var(--red-dim); color:var(--red); }
+  .step-tag.clave       { background:var(--gold-dim); color:var(--gold); }
+  .step-tag.amc-only    { background:var(--purple-dim); color:var(--purple); }
+
+  .step-body { padding:0 14px 12px 46px; display:none; }
+  .step-body.open { display:block; }
+  .step-desc { font-size:14px; color:var(--silver-dim); line-height:1.6; margin-bottom:8px; }
+  .step-rule { background:var(--bg3); border-left:3px solid var(--gold); padding:7px 10px; font-size:13px; color:var(--silver); font-style:italic; margin-bottom:8px; border-radius:0 3px 3px 0; }
+
+  /* KEY DIFFERENCE BOX — AMC specific */
+  .amc-diff { background:var(--purple-dim); border:1px solid rgba(138,122,204,0.3); border-radius:3px; padding:10px 12px; margin-bottom:8px; font-size:13px; color:var(--purple); line-height:1.5; }
+  .amc-diff strong { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; display:block; margin-bottom:3px; color:var(--purple); }
+
+  /* DECISION */
+  .decision { background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:12px 14px; margin-bottom:8px; }
+  .decision-q { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--silver); margin-bottom:8px; }
+  .decision-opts { display:flex; flex-direction:column; gap:5px; }
+  .decision-btn { padding:8px 12px; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1px; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+  .decision-btn:hover { border-color:var(--border-hi); color:var(--silver); }
+  .decision-btn.yes  { border-color:rgba(90,170,122,0.4); color:var(--green); }
+  .decision-btn.no   { border-color:rgba(192,85,85,0.4); color:var(--red); }
+  .decision-btn.warn { border-color:rgba(200,148,58,0.4); color:var(--warn); }
+
+  /* ALERTS */
+  .alert { padding:10px 12px; border-radius:3px; border:1px solid; margin-bottom:8px; font-size:13px; line-height:1.5; }
+  .alert.stop  { background:var(--red-dim);  border-color:rgba(192,85,85,0.3);  color:#e08080; }
+  .alert.go    { background:var(--green-dim);border-color:rgba(90,170,122,0.3); color:#80c8a0; }
+  .alert.warn  { background:var(--warn-dim); border-color:rgba(200,148,58,0.3); color:#d4a870; }
+  .alert.amc   { background:var(--purple-dim);border-color:rgba(138,122,204,0.3);color:var(--purple); }
+  .alert strong{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; display:block; margin-bottom:3px; }
+
+  /* LEVELS VISUAL */
+  .levels-box { background:var(--bg3); border:1px solid var(--border); border-radius:3px; padding:12px 14px; margin-bottom:8px; }
+  .levels-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--silver-lo); margin-bottom:10px; }
+  .level-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .level-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .level-name { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; min-width:80px; }
+  .level-desc { font-size:12px; color:var(--silver-dim); }
+
+  /* BUTTONS */
+  .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .btn-check { padding:7px 12px; border-radius:3px; border:1px solid rgba(200,169,110,0.4); background:var(--gold-dim); color:var(--gold); font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
+  .btn-check:hover { background:rgba(200,169,110,0.25); }
+
+  .section-gap { height:20px; }
+
+  /* COMPLETION */
+  .completion { display:none; background:var(--bg2); border:1px solid rgba(200,169,110,0.4); border-radius:4px; padding:26px; text-align:center; margin-bottom:18px; }
+  .completion.show { display:block; }
+  .completion-icon { font-size:38px; margin-bottom:10px; }
+  .completion-title { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; color:var(--gold); margin-bottom:6px; }
+  .completion-sub { font-size:14px; color:var(--silver-dim); font-style:italic; }
+
+  .btn-reset-all { display:block; margin:20px auto 0; padding:10px 22px; background:none; border:1px solid var(--border); color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+  .btn-reset-all:hover { border-color:var(--border-hi); color:var(--silver); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.25s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Diagrama AMC</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Protocolo de Ejecución</div>
+    <h1 class="page-h1">Diagrama de Flujo AMC</h1>
+    <p class="page-sub">After Market Close — la fiesta que se anuncia de noche y abre al día siguiente</p>
+  </div>
+
+  <div class="amc-diff" style="margin-bottom:16px;">
+    <strong>⚡ DIFERENCIA CLAVE AMC vs BMO</strong>
+    El reporte sale después del cierre del mercado. La primera reacción ocurre en after-hours. Pero la ejecución SIEMPRE es en la apertura del día siguiente — donde hay liquidez real. Tienes toda la noche para prepararte. Úsala bien o se convierte en tu peor enemigo.
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>PROGRESO DEL PROTOCOLO</span>
+      <span id="progress-text">0 / 20 pasos</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <div class="completion" id="completion">
+    <div class="completion-icon">✓</div>
+    <div class="completion-title">Protocolo AMC completado</div>
+    <div class="completion-sub">Desde el reporte nocturno hasta el cierre del trade al día siguiente. Disciplina ejecutada de principio a fin.</div>
+  </div>
+
+  <!-- ═══ FASE 1: NOCHE DEL REPORTE ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge noche-amc">FASE 1</span>
+    <span class="phase-title">Noche del Reporte</span>
+    <span class="phase-time">4:00 PM – 8:00 PM EST</span>
+  </div>
+
+  <div class="step-card" id="s1">
+    <div class="step-header" onclick="toggleBody('s1')">
+      <div class="step-check" id="chk1">○</div>
+      <span class="step-num">01</span>
+      <span class="step-title">LEER EL REPORTE Y ESCUCHAR CONFERENCE CALL</span>
+      <span class="step-tag amc-only">SOLO AMC</span>
+    </div>
+    <div class="step-body" id="body1">
+      <p class="step-desc">El reporte AMC sale generalmente entre 4:00 y 6:00 PM. Revisar: EPS vs estimaciones, Revenue vs estimaciones, Guidance (optimista / neutral / pesimista), tono del CEO en la conference call.</p>
+      <div class="step-rule">No operamos el reporte — operamos la reacción. El reporte es contexto para entender hacia dónde puede ir la psicología colectiva.</div>
+      <div class="decision">
+        <div class="decision-q">¿El reporte generó una reacción clara en after-hours?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s1',1)">✓ Sí — movimiento claro en AH. Continuar análisis.</button>
+          <button class="decision-btn warn" onclick="markDone('s1',1)">⚠ Reacción mixta — requiere más observación del AH.</button>
+          <button class="decision-btn no" onclick="markDone('s1',0)">✕ Sin reacción / movimiento mínimo — score caerá.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s2">
+    <div class="step-header" onclick="toggleBody('s2')">
+      <div class="step-check" id="chk2">○</div>
+      <span class="step-num">02</span>
+      <span class="step-title">CALCULAR RANKING PULSO PRELIMINAR</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body2">
+      <p class="step-desc">Con datos del after-hours calcular el score PULSO: EM definitivo (ya disponible en opciones), ATR%, Gap% estimado según reacción del AH, Short Interest, sentimiento del mercado al cierre.</p>
+      <div class="step-rule">En AMC tienes una ventaja única: el EM ya está actualizado con la información del reporte publicado. Es más preciso que en el BMO.</div>
+      <div class="decision">
+        <div class="decision-q">¿Score PULSO preliminar ≥ 8?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s2',1)">✓ Score ≥ 8 — continuar preparación nocturna</button>
+          <button class="decision-btn no" onclick="noCandidate()">✕ Score &lt; 8 — descartar. No vale el análisis adicional.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s3">
+    <div class="step-header" onclick="toggleBody('s3')">
+      <div class="step-check" id="chk3">○</div>
+      <span class="step-num">03</span>
+      <span class="step-title">MARCAR AH HIGH Y AH LOW</span>
+      <span class="step-tag amc-only">SOLO AMC</span>
+    </div>
+    <div class="step-body" id="body3">
+      <p class="step-desc">Identificar y anotar los niveles del after-hours. En AMC tienes CUATRO niveles clave en lugar de dos:</p>
+      <div class="levels-box">
+        <div class="levels-title">LOS 4 NIVELES DEL AMC</div>
+        <div class="level-row">
+          <div class="level-dot" style="background:#5aaa7a"></div>
+          <span class="level-name" style="color:#5aaa7a">AH High</span>
+          <span class="level-desc">Máximo del after-hours — resistencia clave para el día siguiente</span>
+        </div>
+        <div class="level-row">
+          <div class="level-dot" style="background:#c05555"></div>
+          <span class="level-name" style="color:#c05555">AH Low</span>
+          <span class="level-desc">Mínimo del after-hours — soporte clave para el día siguiente</span>
+        </div>
+        <div class="level-row">
+          <div class="level-dot" style="background:#c8a96e"></div>
+          <span class="level-name" style="color:#c8a96e">PMH del día sig.</span>
+          <span class="level-desc">Pre-Market High — se marca al día siguiente antes de apertura</span>
+        </div>
+        <div class="level-row">
+          <div class="level-dot" style="background:#8a7acc"></div>
+          <span class="level-name" style="color:#8a7acc">PML del día sig.</span>
+          <span class="level-desc">Pre-Market Low — se marca al día siguiente antes de apertura</span>
+        </div>
+      </div>
+      <div class="amc-diff">
+        <strong>TRAMPA FRECUENTE</strong>
+        El AH High NO es lo mismo que el PMH del día siguiente. El precio puede moverse significativamente en pre-market. Marcar el AH High como referencia nocturna, pero actualizar con PMH real en la mañana.
+      </div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s3',1)">✓ AH HIGH Y AH LOW ANOTADOS</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s4">
+    <div class="step-header" onclick="toggleBody('s4')">
+      <div class="step-check" id="chk4">○</div>
+      <span class="step-num">04</span>
+      <span class="step-title">PREPARAR LOS 3 ESCENARIOS PARA LA APERTURA</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body4">
+      <p class="step-desc">Con el sesgo nocturno claro, preparar los tres escenarios posibles para la apertura del día siguiente:</p>
+      <div class="step-rule">A: Gap alcista + retesteo limpio sobre AH High → largo. / B: Gap alcista + fakeout / reversión bajo AH High → no entrar o corto. / C: Gap que no confirma la dirección del AH — mercado reconsideró overnight → evaluar con ojos frescos.</div>
+      <div class="alert amc">
+        <strong>⚡ LA REVERSIÓN OVERNIGHT — EL RIESGO MÁS PELIGROSO DEL AMC</strong>
+        El mercado del día siguiente es un mercado nuevo. Puede abrir en dirección opuesta al AH por nueva información, datos macro, o simplemente porque el AH fue exagerado. Tu análisis nocturno es un punto de partida — no una sentencia.
+      </div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s4',1)">✓ 3 ESCENARIOS PREPARADOS</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s5">
+    <div class="step-header" onclick="toggleBody('s5')">
+      <div class="step-check" id="chk5">○</div>
+      <span class="step-num">05</span>
+      <span class="step-title">CERRAR EL ANÁLISIS Y DORMIR</span>
+      <span class="step-tag amc-only">SOLO AMC</span>
+    </div>
+    <div class="step-body" id="body5">
+      <p class="step-desc">Con los escenarios preparados, no hay nada más que decidir hasta mañana. El sobreanálisis nocturno es el enemigo número uno del AMC — crea convicción ficticia en una dirección antes de ver cómo abre realmente el mercado.</p>
+      <div class="alert warn">
+        <strong>REGLA DE ORO DEL AMC NOCTURNO</strong>
+        El precio de las 11 PM en after-hours no predice la apertura del día siguiente. Más análisis nocturno = más sesgo = peor ejecución mañana. Cerrar el computador. Dormir bien. El mercado abre a las 9:30 AM.
+      </div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s5',1)">✓ ANÁLISIS CERRADO — A DORMIR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+  <div class="timeline-connector">
+    <div class="tl-line"></div>
+    <span class="tl-label">SIGUIENTE DÍA</span>
+    <div class="tl-line"></div>
+  </div>
+  <div class="section-gap"></div>
+
+  <!-- ═══ FASE 2: PRE-MARKET DÍA SIGUIENTE ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge pre">FASE 2</span>
+    <span class="phase-title">Pre-Market — Día Siguiente</span>
+    <span class="phase-time">8:00 – 9:20 AM EST</span>
+  </div>
+
+  <div class="step-card" id="s6">
+    <div class="step-header" onclick="toggleBody('s6')">
+      <div class="step-check" id="chk6">○</div>
+      <span class="step-num">06</span>
+      <span class="step-title">EVALUAR SI LA DIRECCIÓN DEL AH SE SOSTIENE</span>
+      <span class="step-tag amc-only">SOLO AMC</span>
+    </div>
+    <div class="step-body" id="body6">
+      <p class="step-desc">Primera verificación de la mañana: ¿el pre-market continúa en la misma dirección que el after-hours? ¿El gap se mantiene? ¿Hay nueva información overnight que cambie el sesgo?</p>
+      <div class="decision">
+        <div class="decision-q">¿El pre-market confirma la dirección del after-hours?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s6',1)">✓ Confirma dirección — continuar con protocolo</button>
+          <button class="decision-btn warn" onclick="markDone('s6',1)">⚠ Dirección diferente — revisar escenarios con mente abierta</button>
+          <button class="decision-btn no" onclick="markDone('s6',0)">✕ Reversión total overnight — precaución extrema. Reevaluar.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s7">
+    <div class="step-header" onclick="toggleBody('s7')">
+      <div class="step-check" id="chk7">○</div>
+      <span class="step-num">07</span>
+      <span class="step-title">RECALCULAR SCORE PULSO CON DATOS REALES</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body7">
+      <p class="step-desc">Actualizar el ranking con datos reales del pre-market: Gap% real vs cierre previo, Volumen Pre-market%, estructura visible en el gráfico de pre-market.</p>
+      <div class="decision">
+        <div class="decision-q">¿Score PULSO actualizado ≥ 10?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s7',1)">✓ Score ≥ 10 — candidato válido, continuar</button>
+          <button class="decision-btn no" onclick="discardStep('s7')">✕ Score &lt; 10 — DESCARTAR. No operar hoy.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s8">
+    <div class="step-header" onclick="toggleBody('s8')">
+      <div class="step-check" id="chk8">○</div>
+      <span class="step-num">08</span>
+      <span class="step-title">MARCAR LOS 4 NIVELES DEFINITIVOS</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body8">
+      <p class="step-desc">Marcar los cuatro niveles en el gráfico antes de las 9:20 AM: AH High y AH Low (del día anterior) + PMH y PML del pre-market actual. Estos son las cuatro referencias que guiarán la lectura de la apertura.</p>
+      <div class="step-rule">El nivel más importante para la entrada alcista es el PMH — no el AH High. El PMH es el nivel más reciente de resistencia antes de la apertura.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s8',1)">✓ LOS 4 NIVELES MARCADOS EN EL GRÁFICO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s9">
+    <div class="step-header" onclick="toggleBody('s9')">
+      <div class="step-check" id="chk9">○</div>
+      <span class="step-num">09</span>
+      <span class="step-title">CALCULAR TAMAÑO DE POSICIÓN</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body9">
+      <p class="step-desc">Calcular el número de acciones con la fórmula del protocolo. Tener la orden lista — no ejecutada. El stop va bajo el PMH en setup alcista, sobre el PML en setup bajista.</p>
+      <div class="step-rule">Usar la calculadora en joseferrermd.com. Riesgo máximo: 1% del capital total. No negociable.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s9',1)">✓ TAMAÑO CALCULADO Y ORDEN LISTA</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ FASE 3: APERTURA ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge apertura">FASE 3</span>
+    <span class="phase-title">Apertura</span>
+    <span class="phase-time">9:30 – 9:45 AM EST</span>
+  </div>
+
+  <div class="step-card" id="s10">
+    <div class="step-header" onclick="toggleBody('s10')">
+      <div class="step-check" id="chk10">○</div>
+      <span class="step-num">10</span>
+      <span class="step-title">9:30 — OBSERVAR LA PRIMERA VELA SIN ENTRAR</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body10">
+      <p class="step-desc">Igual que en el BMO: la primera vela es información, nunca señal de entrada. En el AMC esta regla es aún más crítica porque el sesgo nocturno puede crear urgencia artificial de entrar inmediatamente.</p>
+      <div class="alert stop">
+        <strong>REGLA ABSOLUTA — AMC Y BMO</strong>
+        No entrar en la primera vela. El after-hours creó expectativa — la apertura puede ser fakeout violento. Esperar siempre.
+      </div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s10',1)">✓ PRIMERA VELA OBSERVADA SIN TOCAR</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s11">
+    <div class="step-header" onclick="toggleBody('s11')">
+      <div class="step-check" id="chk11">○</div>
+      <span class="step-num">11</span>
+      <span class="step-title">9:31–9:33 — EVALUAR RUPTURA DEL PMH</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body11">
+      <p class="step-desc">¿El precio rompió el PMH con cuerpo sólido y volumen fuerte? En el AMC también verificar si el precio superó el AH High — eso confirma que la reacción nocturna fue real y el mercado regular la valida.</p>
+      <div class="decision">
+        <div class="decision-q">¿Ruptura del PMH con volumen?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s11',1)">✓ Ruptura limpia con volumen — esperar retesteo</button>
+          <button class="decision-btn warn" onclick="markDone('s11',1)">⚠ Ruptura sin volumen — alta probabilidad de fakeout</button>
+          <button class="decision-btn no" onclick="markDone('s11',0)">✕ No rompió PMH — evaluar escenario bajista bajo PML</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s12">
+    <div class="step-header" onclick="toggleBody('s12')">
+      <div class="step-check" id="chk12">○</div>
+      <span class="step-num">12</span>
+      <span class="step-title">9:33–9:38 — EVALUAR EL RETESTEO</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body12">
+      <p class="step-desc">El precio retrocede al PMH después de la ruptura. Evaluar limpieza del retesteo. En el AMC, también verificar que el precio no caiga bajo el AH High — eso sería señal de debilidad adicional.</p>
+      <div class="step-rule">LIMPIO: volumen decreciente, nivel sostenido, mechas cortas. / SUCIO: volumen alto en retroceso, pérdida del nivel → NO ENTRAR.</div>
+      <div class="decision">
+        <div class="decision-q">¿Cómo es el retesteo?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s12',1)">✓ Retesteo LIMPIO — preparar entrada en confirmación</button>
+          <button class="decision-btn no" onclick="markDone('s12',0)">✕ Retesteo SUCIO — NO entrar. Esperar o cancelar.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s13">
+    <div class="step-header" onclick="toggleBody('s13')">
+      <div class="step-check" id="chk13">○</div>
+      <span class="step-num">13</span>
+      <span class="step-title">9:38–9:40 — CONFIRMAR Y EJECUTAR ENTRADA</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body13">
+      <p class="step-desc">Vela de confirmación fuerte sobre el PMH + volumen + VWAP respetado. Ejecutar la orden. Stop automático inmediato — bajo el mínimo del retesteo o bajo el PMH.</p>
+      <div class="alert go">
+        <strong>EJECUCIÓN IDÉNTICA AL BMO</strong>
+        Desde aquí en adelante el AMC y el BMO son exactamente iguales. Entrada + stop automático simultáneos. Sin excepción.
+      </div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s13',1)">✓ ENTRADA EJECUTADA Y STOP COLOCADO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s14">
+    <div class="step-header" onclick="toggleBody('s14')">
+      <div class="step-check" id="chk14">○</div>
+      <span class="step-num">14</span>
+      <span class="step-title">9:45 AM — LÍMITE MÁXIMO DE ENTRADA</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body14">
+      <p class="step-desc">Si a las 9:45 AM no hay señal estructural clara, el protocolo AMC de este activo termina para el día.</p>
+      <div class="alert warn">
+        <strong>REGLA DE LAS 9:45 — IGUAL QUE EN BMO</strong>
+        El análisis nocturno no cambia esta regla. Si no hay señal antes de las 9:45 AM, no se opera. Toda la preparación nocturna vale cero si la estructura no está presente en la apertura.
+      </div>
+      <div class="decision">
+        <div class="decision-q">¿Entraste antes de las 9:45?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s14',1)">✓ En posición — continuar con gestión</button>
+          <button class="decision-btn no" onclick="noTrade()">✕ Sin señal — protocolo AMC cerrado para hoy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ FASE 4: GESTIÓN ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge gestion">FASE 4</span>
+    <span class="phase-title">Gestión Activa</span>
+    <span class="phase-time">Mientras el trade está abierto</span>
+  </div>
+
+  <div class="step-card" id="s15">
+    <div class="step-header" onclick="toggleBody('s15')">
+      <div class="step-check" id="chk15">○</div>
+      <span class="step-num">15</span>
+      <span class="step-title">MONITOREAR HASTA 1R</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body15">
+      <p class="step-desc">Precio avanzando hacia 1R. Mantener posición. Si el stop se ejecuta: pérdida de 1R, estadística normal, registrar en bitácora.</p>
+      <div class="decision">
+        <div class="decision-q">¿Qué ocurre en el camino a 1R?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s15',1)">✓ Precio avanza con estructura — continuar</button>
+          <button class="decision-btn no" onclick="stopExecuted()">✕ Stop ejecutado — −1R. Registrar y cerrar.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s16">
+    <div class="step-header" onclick="toggleBody('s16')">
+      <div class="step-check" id="chk16">○</div>
+      <span class="step-num">16</span>
+      <span class="step-title">EN 1.5R — TOMAR PARCIAL DEL 60%</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body16">
+      <p class="step-desc">Precio llega a 1.5R. Cerrar el 60% de la posición inmediatamente. La ganancia parcial es real y está asegurada desde este momento.</p>
+      <div class="alert go">
+        <strong>ACCIÓN INMEDIATA EN 1.5R</strong>
+        Cerrar 60% de acciones. Sin debate. Sin esperar más. La disciplina de tomar el parcial es lo que separa al profesional del operador que devuelve ganancias.
+      </div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s16',1)">✓ PARCIAL 60% EJECUTADO EN 1.5R</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s17">
+    <div class="step-header" onclick="toggleBody('s17')">
+      <div class="step-check" id="chk17">○</div>
+      <span class="step-num">17</span>
+      <span class="step-title">MOVER STOP A BREAK EVEN INMEDIATAMENTE</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body17">
+      <p class="step-desc">Después del parcial del 60%, mover el stop del 40% restante al precio de entrada. Acción inmediata — no después.</p>
+      <div class="step-rule">Con el stop en break even, el peor resultado posible del 40% restante es cero. El riesgo real del trade ya es cero desde este momento.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s17',1)">✓ STOP MOVIDO A BREAK EVEN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s18">
+    <div class="step-header" onclick="toggleBody('s18')">
+      <div class="step-check" id="chk18">○</div>
+      <span class="step-num">18</span>
+      <span class="step-title">EN 2R+ — CERRAR EL 40% RESTANTE</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body18">
+      <p class="step-desc">Precio llega a 2R. Cerrar el 40% restante según señales de agotamiento: volumen decreciente, mechas superiores largas, pérdida de impulso.</p>
+      <div class="amc-diff">
+        <strong>⚡ NOTA ESPECÍFICA AMC</strong>
+        Los trades AMC a veces tienen mayor extensión que los BMO porque el sesgo lleva más tiempo acumulado. Si el volumen sigue fuerte más allá de 2R, puedes ajustar el stop progresivamente en lugar de salir en 2R fijo. Pero siempre con stop activo.
+      </div>
+      <div class="decision">
+        <div class="decision-q">¿Cómo sale el 40% restante?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s18',1)">✓ Cerrado en 2R+ — trade completado exitosamente</button>
+          <button class="decision-btn warn" onclick="markDone('s18',1)">⚠ Stop a BE ejecutado — ganamos el parcial, el 40% en cero</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s19">
+    <div class="step-header" onclick="toggleBody('s19')">
+      <div class="step-check" id="chk19">○</div>
+      <span class="step-num">19</span>
+      <span class="step-title">VERIFICAR: ¿DEJAR SWING SI EL TRADE ES EXCEPCIONAL?</span>
+      <span class="step-tag amc-only">SOLO AMC</span>
+    </div>
+    <div class="step-body" id="body19">
+      <p class="step-desc">Protocolo especial exclusivo del AMC: en casos muy específicos (empresa grande, lejos de máximos, reporte excelente, caída por emoción colectiva), el método permite convertir en swing trade en lugar de cerrar.</p>
+      <div class="alert amc">
+        <strong>⚡ PROTOCOLO DE RECUPERACIÓN ESPECIAL</strong>
+        Condiciones: empresa grande de alta calidad + lejos de máximos históricos + reporte fundamentalmente sólido + precio cayó por emoción, no por deterioro del negocio. En ese caso específico: no cerrar, gestionar con stops ajustados. 100% efectividad histórica documentada en el método.
+      </div>
+      <div class="step-rule">Si no cumple TODAS las condiciones simultáneamente → cerrar en 2R como protocolo estándar. Este es el único caso donde el AMC difiere en gestión respecto al BMO.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s19',1)">✓ DECISIÓN TOMADA — CERRADO O EN SWING</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s20">
+    <div class="step-header" onclick="toggleBody('s20')">
+      <div class="step-check" id="chk20">○</div>
+      <span class="step-num">20</span>
+      <span class="step-title">REGISTRAR EN BITÁCORA</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body20">
+      <p class="step-desc">Completar el registro en la bitácora: activo, tipo AMC, score PULSO, entrada, stop, salida(s), resultado en R, estado emocional al entrar, si se siguió el protocolo exactamente. Incluir nota sobre si hubo reversión overnight y cómo afectó la ejecución.</p>
+      <div class="step-rule">En la bitácora del AMC agregar siempre: ¿La dirección del AH se sostuvo? ¿Hubo reversión overnight? ¿El sobreanálisis nocturno afectó la objetividad en la apertura? Esa reflexión vale oro.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s20',1)">✓ BITÁCORA REGISTRADA</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-reset-all" onclick="resetAll()">↺ Reiniciar protocolo</button>
+
+</main>
+
+<script>
+  const TOTAL = 20;
+  let completed = 0;
+
+  function toggleBody(id) {
+    const num = id.replace('s','');
+    document.getElementById('body'+num).classList.toggle('open');
+  }
+
+  function markDone(id, success) {
+    const card = document.getElementById(id);
+    const num  = id.replace('s','');
+    if (card.classList.contains('done')) return;
+    card.classList.add('done');
+    document.getElementById('chk'+num).textContent = '✓';
+    document.getElementById('body'+num).classList.remove('open');
+    if (success) completed++;
+    updateProgress();
+  }
+
+  function discardStep(id) {
+    const card = document.getElementById(id);
+    const num  = id.replace('s','');
+    card.classList.add('done','skip');
+    document.getElementById('chk'+num).textContent = '✕';
+    document.getElementById('body'+num).classList.remove('open');
+    const al = document.createElement('div');
+    al.className = 'alert stop fade-in';
+    al.style.marginBottom = '8px';
+    al.innerHTML = '<strong>CANDIDATO DESCARTADO</strong>Score PULSO insuficiente. No operar este activo hoy. Todo el análisis nocturno queda invalidado — buscar próximo candidato.';
+    card.after(al);
+    completed++;
+    updateProgress();
+  }
+
+  function noCandidate() {
+    const al = document.createElement('div');
+    al.className = 'alert warn fade-in';
+    al.style.marginBottom = '8px';
+    al.innerHTML = '<strong>SIN CANDIDATO VÁLIDO</strong>Score preliminar insuficiente. No vale continuar el análisis nocturno. Cerrar el computador y descansar — habrá otros earnings.';
+    document.getElementById('body2').after(al);
+    markDone('s2',0);
+  }
+
+  function noTrade() {
+    const al = document.createElement('div');
+    al.className = 'alert warn fade-in';
+    al.style.marginBottom = '8px';
+    al.innerHTML = '<strong>SIN SEÑAL ANTES DE LAS 9:45</strong>Protocolo AMC cerrado para este activo hoy. Toda la preparación nocturna fue valiosa — confirmó que la estructura no estaba presente. No operar es también una ejecución correcta del protocolo.';
+    document.getElementById('body14').after(al);
+    markDone('s14',0);
+  }
+
+  function stopExecuted() {
+    const al = document.createElement('div');
+    al.className = 'alert warn fade-in';
+    al.style.marginBottom = '8px';
+    al.innerHTML = '<strong>STOP EJECUTADO — −1R</strong>El sistema funcionó. La preparación nocturna fue correcta — el mercado simplemente no confirmó. Registrar en bitácora con el mismo criterio que una ganancia. El protocolo continúa en el próximo trade.';
+    document.getElementById('body15').after(al);
+    markDone('s15',0);
+    ['s16','s17','s18','s19'].forEach(id => document.getElementById(id).classList.add('skip'));
+    markDone('s20',0);
+  }
+
+  function updateProgress() {
+    const pct = Math.round((completed/TOTAL)*100);
+    document.getElementById('progress-fill').style.width = pct+'%';
+    document.getElementById('progress-text').textContent = completed+' / '+TOTAL+' pasos';
+    if (completed >= TOTAL) {
+      document.getElementById('completion').classList.add('show');
+      document.getElementById('completion').scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  }
+
+  function resetAll() {
+    completed = 0;
+    document.querySelectorAll('.alert.fade-in').forEach(el=>el.remove());
+    for (let i=1; i<=TOTAL; i++) {
+      const card=document.getElementById('s'+i);
+      const chk =document.getElementById('chk'+i);
+      const body=document.getElementById('body'+i);
+      if(card){card.classList.remove('done','active','skip');}
+      if(chk) {chk.textContent='○';}
+      if(body){body.classList.remove('open');}
+    }
+    document.getElementById('completion').classList.remove('show');
+    document.getElementById('progress-fill').style.width='0%';
+    document.getElementById('progress-text').textContent='0 / 20 pasos';
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+</script>
+
+</body>
+</html>

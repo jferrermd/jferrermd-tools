@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer de Sesión BMO — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.3);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --red:#c05555; --warn:#c8943a;
+    --green-dim:rgba(90,170,122,0.15); --red-dim:rgba(192,85,85,0.15);
+    --warn-dim:rgba(200,148,58,0.15); --gold-dim:rgba(200,169,110,0.15);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+
+  main { width:100%; max-width:720px; padding:0 18px 60px; }
+
+  .page-title { background:#e8e8ec; text-align:center; padding:22px 24px 18px; border-bottom:1px solid #d0d0d8; margin-bottom:20px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#111 !important; text-transform:uppercase; margin-bottom:6px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:24px; font-weight:900; color:#111 !important; margin-bottom:4px; }
+  .page-sub { font-size:13px; color:#444 !important; font-style:italic; }
+
+  /* MAIN CLOCK */
+  .clock-card {
+    background:var(--bg2); border:2px solid var(--border); border-radius:6px;
+    padding:28px 22px; margin-bottom:14px; text-align:center;
+    transition:border-color 0.5s, background 0.5s;
+  }
+  .clock-card.pre    { border-color:rgba(200,169,110,0.5); background:rgba(200,169,110,0.04); }
+  .clock-card.active { border-color:rgba(192,85,85,0.6); background:rgba(192,85,85,0.04); }
+  .clock-card.window { border-color:rgba(90,170,122,0.6); background:rgba(90,170,122,0.04); }
+  .clock-card.closed { border-color:rgba(140,136,128,0.3); }
+
+  .clock-phase { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-lo); margin-bottom:8px; }
+  .clock-time { font-family:'Space Mono',monospace; font-size:64px; font-weight:700; letter-spacing:-2px; line-height:1; margin-bottom:6px; transition:color 0.5s; }
+  .clock-time.pre    { color:var(--gold); }
+  .clock-time.active { color:var(--red); }
+  .clock-time.window { color:var(--green); }
+  .clock-time.closed { color:var(--silver-lo); }
+
+  .clock-est { font-family:'Space Mono',monospace; font-size:11px; color:var(--silver-lo); margin-bottom:14px; }
+
+  /* PHASE LABEL */
+  .phase-label { display:inline-block; font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:3px; padding:6px 16px; border-radius:20px; margin-bottom:14px; transition:all 0.5s; }
+  .phase-label.pre    { background:var(--gold-dim);  color:var(--gold);  border:1px solid rgba(200,169,110,0.4); }
+  .phase-label.active { background:var(--red-dim);   color:var(--red);   border:1px solid rgba(192,85,85,0.4); }
+  .phase-label.window { background:var(--green-dim); color:var(--green); border:1px solid rgba(90,170,122,0.4); }
+  .phase-label.closed { background:rgba(140,136,128,0.08); color:var(--silver-lo); border:1px solid var(--border); }
+
+  /* INSTRUCTION */
+  .instruction { font-size:15px; color:var(--silver-dim); font-style:italic; line-height:1.5; }
+  .instruction strong { font-family:'Space Mono',monospace; font-size:10px; font-style:normal; display:block; margin-bottom:4px; color:var(--silver); }
+
+  /* PROGRESS TIMELINE */
+  .timeline-card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:18px 18px; margin-bottom:14px; }
+  .tl-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:14px; }
+  .tl-bar-wrap { position:relative; height:8px; background:var(--bg3); border-radius:4px; margin-bottom:12px; overflow:hidden; }
+  .tl-bar-fill { height:100%; border-radius:4px; transition:width 1s linear; background:linear-gradient(90deg, var(--gold), var(--green)); }
+  .tl-markers { display:flex; justify-content:space-between; position:relative; }
+  .tl-marker { display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .tl-marker-dot { width:8px; height:8px; border-radius:50%; border:2px solid var(--border); background:var(--bg2); transition:all 0.3s; }
+  .tl-marker-dot.passed  { background:var(--green); border-color:var(--green); }
+  .tl-marker-dot.current { background:var(--red); border-color:var(--red); box-shadow:0 0 8px rgba(192,85,85,0.6); }
+  .tl-marker-time { font-family:'Space Mono',monospace; font-size:8px; color:var(--silver-lo); }
+  .tl-marker-label { font-family:'Space Mono',monospace; font-size:7px; color:var(--silver-lo); text-align:center; max-width:50px; line-height:1.2; }
+
+  /* PHASE CARDS */
+  .phases-grid { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+  .phase-card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:14px 16px; display:flex; align-items:flex-start; gap:12px; transition:all 0.3s; }
+  .phase-card.current { border-color:var(--red); background:rgba(192,85,85,0.05); }
+  .phase-card.passed  { opacity:0.5; }
+  .phase-card.future  { opacity:0.6; }
+  .phase-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; margin-top:3px; }
+  .phase-dot.current { background:var(--red); box-shadow:0 0 10px rgba(192,85,85,0.5); }
+  .phase-dot.passed  { background:var(--green); }
+  .phase-dot.future  { background:var(--silver-lo); }
+  .phase-info { flex:1; }
+  .phase-time-range { font-family:'Space Mono',monospace; font-size:9px; color:var(--silver-lo); margin-bottom:3px; }
+  .phase-name { font-family:'Space Mono',monospace; font-size:11px; font-weight:700; color:var(--silver); margin-bottom:4px; }
+  .phase-action { font-size:13px; color:var(--silver-dim); line-height:1.4; }
+  .phase-badge-time { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; min-width:60px; text-align:right; }
+  .phase-badge-time.remaining { color:var(--red); }
+  .phase-badge-time.done { color:var(--green); }
+  .phase-badge-time.waiting { color:var(--silver-lo); }
+
+  /* COUNTDOWN TO OPEN */
+  .countdown-card { background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:16px 18px; margin-bottom:14px; text-align:center; }
+  .cd-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-lo); margin-bottom:6px; }
+  .cd-time { font-family:'Space Mono',monospace; font-size:36px; font-weight:700; letter-spacing:-1px; }
+  .cd-time.pre    { color:var(--gold); }
+  .cd-time.open   { color:var(--green); }
+  .cd-time.closed { color:var(--silver-lo); }
+  .cd-sub { font-size:13px; color:var(--silver-lo); font-style:italic; margin-top:4px; }
+
+  /* ALERT */
+  .pulse-alert { display:none; background:var(--red-dim); border:1px solid rgba(192,85,85,0.4); border-radius:4px; padding:14px 16px; margin-bottom:14px; text-align:center; }
+  .pulse-alert.show { display:block; }
+  .pulse-alert strong { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--red); display:block; margin-bottom:4px; }
+  @keyframes pulseRed { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .pulse-alert.show { animation:pulseRed 1.5s ease-in-out infinite; }
+
+  /* TIMEZONE SELECTOR */
+  .tz-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .tz-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--silver-lo); white-space:nowrap; }
+  select.tz-select { background:#e8e8e8; border:1px solid #ccc; border-radius:3px; color:#111; font-family:'Space Mono',monospace; font-size:12px; font-weight:700; padding:7px 10px; outline:none; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Timer BMO</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Sesión en Vivo</div>
+    <h1 class="page-h1">Timer de Sesión BMO</h1>
+    <p class="page-sub">Reloj en tiempo real — te dice en qué fase del protocolo estás y qué debes hacer ahora mismo</p>
+  </div>
+
+  <!-- TIMEZONE -->
+  <div class="tz-row">
+    <span class="tz-label">TU ZONA HORARIA:</span>
+    <select class="tz-select" id="tz-select" onchange="updateTimer()">
+      <option value="-5">EST (Nueva York) UTC-5</option>
+      <option value="-6">CST (Chicago) UTC-6</option>
+      <option value="-7">MST (Denver) UTC-7</option>
+      <option value="-8">PST (Los Ángeles) UTC-8</option>
+      <option value="0">GMT (Londres) UTC+0</option>
+      <option value="1">CET (Madrid/París) UTC+1</option>
+      <option value="-4">VET (Venezuela) UTC-4</option>
+      <option value="-4b">CLT (Chile) UTC-4</option>
+      <option value="-3">BRT (Brasil) UTC-3</option>
+      <option value="-5b">COT (Colombia) UTC-5</option>
+      <option value="-5c">PET (Perú) UTC-5</option>
+      <option value="-6b">MEX (México) UTC-6</option>
+    </select>
+  </div>
+
+  <!-- MAIN CLOCK -->
+  <div class="clock-card" id="clock-card">
+    <div class="clock-phase" id="clock-phase">HORA ACTUAL EST</div>
+    <div class="clock-time" id="clock-time">--:--:--</div>
+    <div class="clock-est" id="clock-est">-- : -- : -- EST</div>
+    <div class="phase-label" id="phase-label">Calculando...</div>
+    <div class="instruction">
+      <strong id="inst-title">—</strong>
+      <span id="inst-body">—</span>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN TO OPEN / NEXT MILESTONE -->
+  <div class="countdown-card">
+    <div class="cd-label" id="cd-label">TIEMPO PARA LA APERTURA</div>
+    <div class="cd-time" id="cd-time">--:--:--</div>
+    <div class="cd-sub" id="cd-sub">9:30 AM EST — Apertura del mercado</div>
+  </div>
+
+  <!-- PULSE ALERT — 9:38-9:45 window -->
+  <div class="pulse-alert" id="pulse-alert">
+    <strong>⚡ VENTANA DE ENTRADA ACTIVA</strong>
+    Entre 9:38 y 9:45 AM EST — Si el retesteo fue limpio y hay confirmación: EJECUTAR AHORA.
+    Después de las 9:45 el protocolo BMO se cierra para hoy.
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline-card">
+    <div class="tl-title">Progreso de la sesión BMO</div>
+    <div class="tl-bar-wrap">
+      <div class="tl-bar-fill" id="tl-fill" style="width:0%"></div>
+    </div>
+    <div class="tl-markers">
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-0"></div>
+        <div class="tl-marker-time">8:00</div>
+        <div class="tl-marker-label">Pre-market abre</div>
+      </div>
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-1"></div>
+        <div class="tl-marker-time">9:00</div>
+        <div class="tl-marker-label">Preparación final</div>
+      </div>
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-2"></div>
+        <div class="tl-marker-time">9:20</div>
+        <div class="tl-marker-label">Marcar niveles</div>
+      </div>
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-3"></div>
+        <div class="tl-marker-time">9:30</div>
+        <div class="tl-marker-label">Apertura</div>
+      </div>
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-4"></div>
+        <div class="tl-marker-time">9:31</div>
+        <div class="tl-marker-label">Primera vela</div>
+      </div>
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-5"></div>
+        <div class="tl-marker-time">9:38</div>
+        <div class="tl-marker-label">Ventana entrada</div>
+      </div>
+      <div class="tl-marker">
+        <div class="tl-marker-dot" id="dot-6"></div>
+        <div class="tl-marker-time">9:45</div>
+        <div class="tl-marker-label">Cierre protocolo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE CARDS -->
+  <div class="phases-grid" id="phases-grid"></div>
+
+</main>
+
+<script>
+  const EST_OFFSET = -5; // EST base UTC offset
+
+  const PHASES = [
+    {
+      id:'p0', from:[0,0], to:[8,0],
+      name:'ANTES DEL PRE-MARKET',
+      range:'Antes de 8:00 AM EST',
+      action:'El mercado aún no abre el pre-market. Revisa el calendario de earnings de hoy. Identifica tus candidatos. Descansa.',
+      state:'future', color:'silver-lo'
+    },
+    {
+      id:'p1', from:[8,0], to:[9,0],
+      name:'PRE-MARKET TEMPRANO',
+      range:'8:00 – 9:00 AM EST',
+      action:'Leer el reporte BMO si aún no lo hiciste. Verificar gap y dirección inicial. Calcular Score PULSO preliminar con datos reales. Descartar candidatos con score < 8.',
+      state:'future', color:'gold'
+    },
+    {
+      id:'p2', from:[9,0], to:[9,20],
+      name:'PREPARACIÓN FINAL',
+      range:'9:00 – 9:20 AM EST',
+      action:'Actualizar Score PULSO definitivo. Calcular tamaño de posición con la calculadora. Preparar la orden — no ejecutarla todavía. Confirmar SPY/QQQ: ¿viento a favor o en contra?',
+      state:'future', color:'gold'
+    },
+    {
+      id:'p3', from:[9,20], to:[9,30],
+      name:'MARCAR NIVELES — ÚLTIMA VENTANA',
+      range:'9:20 – 9:30 AM EST',
+      action:'⚠ ÚLTIMO MOMENTO para marcar PMH y PML en el gráfico. Después de 9:30 no hay tiempo. Verificar que la orden esté lista. Respirar. No improvisar.',
+      state:'future', color:'warn'
+    },
+    {
+      id:'p4', from:[9,30], to:[9,31],
+      name:'APERTURA — OBSERVAR PRIMERA VELA',
+      range:'9:30 – 9:31 AM EST',
+      action:'🚫 NO ENTRAR. La primera vela es información — nunca señal de entrada. Observar dirección, volumen y si el precio supera el PMH. Solo mirar.',
+      state:'future', color:'red'
+    },
+    {
+      id:'p5', from:[9,31], to:[9,33],
+      name:'EVALUAR RUPTURA DEL PMH',
+      range:'9:31 – 9:33 AM EST',
+      action:'¿Rompió el PMH con cuerpo sólido y volumen? Si sí: esperar retesteo. Si no: evaluar escenario bajista bajo PML o esperar al siguiente candidato.',
+      state:'future', color:'red'
+    },
+    {
+      id:'p6', from:[9,33], to:[9,38],
+      name:'EVALUAR RETESTEO',
+      range:'9:33 – 9:38 AM EST',
+      action:'¿El retroceso al PMH tiene volumen decreciente y mechas cortas? → LIMPIO: preparar entrada. ¿Volumen alto en retroceso y mechas largas? → SUCIO: no entrar.',
+      state:'future', color:'red'
+    },
+    {
+      id:'p7', from:[9,38], to:[9,45],
+      name:'⚡ VENTANA DE ENTRADA',
+      range:'9:38 – 9:45 AM EST',
+      action:'Si el retesteo fue limpio y hay confirmación sobre el PMH con volumen: EJECUTAR. Stop automático inmediatamente. Esta es tu única ventana de entrada del protocolo BMO.',
+      state:'future', color:'green'
+    },
+    {
+      id:'p8', from:[9,45], to:[16,0],
+      name:'PROTOCOLO BMO CERRADO',
+      range:'9:45 AM – 4:00 PM EST',
+      action:'Si entraste: gestionar la posición con el protocolo (1.5R → parcial 60% → stop a BE → 2R+ salida). Si no entraste: el protocolo BMO terminó para hoy. No perseguir.',
+      state:'future', color:'silver'
+    },
+  ];
+
+  function getESTNow() {
+    const now = new Date();
+    // Get UTC time
+    const utc = now.getTime() + now.getTimezoneOffset()*60000;
+    // EST = UTC - 5h
+    return new Date(utc + EST_OFFSET*3600000);
+  }
+
+  function toMinutes(h,m) { return h*60+m; }
+
+  function pad2(n) { return String(n).padStart(2,'0'); }
+
+  function formatTime(d) {
+    return pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());
+  }
+
+  function getLocalOffset() {
+    const val = document.getElementById('tz-select').value;
+    // Handle duplicates
+    return parseFloat(val.replace('b','').replace('c',''));
+  }
+
+  function getCurrentPhase(estMins) {
+    for (let i=PHASES.length-1; i>=0; i--) {
+      const from = toMinutes(...PHASES[i].from);
+      if (estMins >= from) return i;
+    }
+    return 0;
+  }
+
+  function updateTimer() {
+    const estNow = getESTNow();
+    const estH   = estNow.getHours();
+    const estM   = estNow.getMinutes();
+    const estS   = estNow.getSeconds();
+    const estMins = toMinutes(estH, estM) + estS/60;
+
+    // Local time display
+    const localOffset = getLocalOffset();
+    const localNow = new Date(estNow.getTime() + (localOffset - EST_OFFSET)*3600000);
+
+    // Update main clock
+    document.getElementById('clock-time').textContent = formatTime(localNow);
+    document.getElementById('clock-est').textContent  = formatTime(estNow)+' EST';
+
+    // Current phase
+    const phaseIdx = getCurrentPhase(estMins);
+    const phase = PHASES[phaseIdx];
+
+    // Clock card state
+    const cc = document.getElementById('clock-card');
+    const ct = document.getElementById('clock-time');
+    const pl = document.getElementById('phase-label');
+    cc.className = 'clock-card';
+    ct.className = 'clock-time';
+    pl.className = 'phase-label';
+
+    if (estMins < toMinutes(8,0)) {
+      cc.classList.add('closed'); ct.classList.add('closed'); pl.classList.add('closed');
+      pl.textContent = 'PRE-MARKET CERRADO';
+    } else if (estMins < toMinutes(9,30)) {
+      cc.classList.add('pre'); ct.classList.add('pre'); pl.classList.add('pre');
+      pl.textContent = '⏳ PRE-MARKET ABIERTO';
+    } else if (estMins < toMinutes(9,38)) {
+      cc.classList.add('active'); ct.classList.add('active'); pl.classList.add('active');
+      pl.textContent = '🔴 APERTURA — PROTOCOLO ACTIVO';
+    } else if (estMins < toMinutes(9,45)) {
+      cc.classList.add('window'); ct.classList.add('window'); pl.classList.add('window');
+      pl.textContent = '⚡ VENTANA DE ENTRADA';
+    } else if (estMins < toMinutes(16,0)) {
+      cc.classList.add('active'); ct.classList.add('active'); pl.classList.add('active');
+      pl.textContent = '📊 SESIÓN REGULAR — GESTIÓN';
+    } else {
+      cc.classList.add('closed'); ct.classList.add('closed'); pl.classList.add('closed');
+      pl.textContent = 'MERCADO CERRADO';
+    }
+
+    // Instruction
+    document.getElementById('inst-title').textContent = phase.name;
+    document.getElementById('inst-body').textContent  = phase.action;
+
+    // Countdown
+    const openMins = toMinutes(9,30);
+    const cdLabel = document.getElementById('cd-label');
+    const cdTime  = document.getElementById('cd-time');
+    const cdSub   = document.getElementById('cd-sub');
+    cdTime.className = 'cd-time';
+
+    if (estMins < openMins) {
+      const diff = (openMins - estMins)*60; // seconds
+      const hh = Math.floor(diff/3600);
+      const mm = Math.floor((diff%3600)/60);
+      const ss = Math.floor(diff%60);
+      cdLabel.textContent = 'TIEMPO PARA LA APERTURA';
+      cdTime.textContent  = (hh>0?pad2(hh)+':':'')+pad2(mm)+':'+pad2(ss);
+      cdTime.classList.add('pre');
+      cdSub.textContent = '9:30 AM EST — Apertura del mercado';
+    } else if (estMins < toMinutes(9,45)) {
+      const closeMins = toMinutes(9,45);
+      const diff = (closeMins - estMins)*60;
+      const mm = Math.floor(diff/60);
+      const ss = Math.floor(diff%60);
+      cdLabel.textContent = 'TIEMPO RESTANTE EN PROTOCOLO';
+      cdTime.textContent  = pad2(mm)+':'+pad2(ss);
+      cdTime.classList.add('open');
+      cdSub.textContent = '9:45 AM EST — Cierre del protocolo BMO';
+    } else if (estMins < toMinutes(16,0)) {
+      cdLabel.textContent = 'SESIÓN ACTIVA';
+      cdTime.textContent  = '——';
+      cdTime.classList.add('open');
+      cdSub.textContent = 'Mercado abierto — gestión de posición activa';
+    } else {
+      cdLabel.textContent = 'PRÓXIMA APERTURA';
+      // Next market open
+      const tomorrow = new Date(estNow);
+      tomorrow.setDate(tomorrow.getDate()+1);
+      cdTime.textContent = '9:30 AM';
+      cdTime.classList.add('closed');
+      cdSub.textContent = 'El mercado abre mañana a las 9:30 AM EST';
+    }
+
+    // Pulse alert
+    const pa = document.getElementById('pulse-alert');
+    if (estMins >= toMinutes(9,38) && estMins < toMinutes(9,45)) {
+      pa.classList.add('show');
+    } else {
+      pa.classList.remove('show');
+    }
+
+    // Timeline progress
+    const sessionStart = toMinutes(8,0);
+    const sessionEnd   = toMinutes(9,45);
+    const pct = Math.max(0, Math.min(100, ((estMins - sessionStart)/(sessionEnd - sessionStart))*100));
+    document.getElementById('tl-fill').style.width = pct+'%';
+
+    // Dot states
+    const milestones = [
+      toMinutes(8,0), toMinutes(9,0), toMinutes(9,20),
+      toMinutes(9,30), toMinutes(9,31), toMinutes(9,38), toMinutes(9,45)
+    ];
+    milestones.forEach((m,i) => {
+      const dot = document.getElementById('dot-'+i);
+      if (!dot) return;
+      dot.className = 'tl-marker-dot';
+      if (estMins >= m+1) dot.classList.add('passed');
+      else if (estMins >= m-0.5) dot.classList.add('current');
+    });
+
+    // Phase cards
+    const grid = document.getElementById('phases-grid');
+    grid.innerHTML = PHASES.map((p,i) => {
+      const from = toMinutes(...p.from);
+      const to   = toMinutes(...p.to);
+      let state = 'future';
+      if (estMins >= to)   state = 'passed';
+      else if (estMins >= from) state = 'current';
+
+      const dotCls  = state==='current'?'current':state==='passed'?'passed':'future';
+      const cardCls = state==='current'?'phase-card current':state==='passed'?'phase-card passed':'phase-card future';
+
+      let timeStr = '';
+      if (state==='current') {
+        const rem = (to - estMins)*60;
+        if (rem > 0) {
+          const mm = Math.floor(rem/60), ss = Math.floor(rem%60);
+          timeStr = `<span class="phase-badge-time remaining">${mm>0?mm+'m ':''}&nbsp;${pad2(ss)}s</span>`;
+        }
+      } else if (state==='passed') {
+        timeStr = `<span class="phase-badge-time done">✓</span>`;
+      } else {
+        timeStr = `<span class="phase-badge-time waiting">${pad2(p.from[0])}:${pad2(p.from[1])}</span>`;
+      }
+
+      return `<div class="${cardCls}">
+        <div class="phase-dot ${dotCls}"></div>
+        <div class="phase-info">
+          <div class="phase-time-range">${p.range}</div>
+          <div class="phase-name">${p.name}</div>
+          <div class="phase-action">${p.action}</div>
+        </div>
+        ${timeStr}
+      </div>`;
+    }).join('');
+  }
+
+  // Run every second
+  updateTimer();
+  setInterval(updateTimer, 1000);
+</script>
+</body>
+</html>

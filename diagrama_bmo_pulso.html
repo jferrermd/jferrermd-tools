@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama de Flujo BMO — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.3);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --red:#c05555; --warn:#c8943a;
+    --green-dim:rgba(90,170,122,0.15); --red-dim:rgba(192,85,85,0.15);
+    --warn-dim:rgba(200,148,58,0.15); --gold-dim:rgba(200,169,110,0.15);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  /* HEADER */
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+
+  /* MAIN */
+  main { width:100%; max-width:720px; padding:0 18px 80px; }
+
+  /* PAGE TITLE */
+  .page-title { background:#e8e8ec; text-align:center; padding:28px 28px 24px; border-bottom:1px solid #d0d0d8; margin-bottom:24px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#333 !important; text-transform:uppercase; margin-bottom:8px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:#111 !important; margin-bottom:6px; }
+  .page-sub { font-size:13px; color:#444 !important; font-style:italic; }
+
+  /* PROGRESS BAR */
+  .progress-wrap { margin-bottom:20px; }
+  .progress-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .progress-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .progress-fill { height:100%; background:var(--green); border-radius:2px; transition:width 0.5s ease; width:0%; }
+
+  /* PHASE HEADER */
+  .phase-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+  .phase-badge { font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px; padding:4px 10px; border-radius:20px; }
+  .phase-badge.noche  { background:rgba(200,169,110,0.15); color:var(--gold); border:1px solid rgba(200,169,110,0.3); }
+  .phase-badge.pre    { background:rgba(90,170,122,0.12); color:var(--green); border:1px solid rgba(90,170,122,0.3); }
+  .phase-badge.apertura{ background:rgba(192,85,85,0.12); color:var(--red); border:1px solid rgba(192,85,85,0.3); }
+  .phase-badge.gestion{ background:rgba(200,148,58,0.12); color:var(--warn); border:1px solid rgba(200,148,58,0.3); }
+  .phase-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--silver); }
+  .phase-time  { font-family:'Space Mono',monospace; font-size:9px; color:var(--silver-lo); margin-left:auto; }
+
+  /* STEP CARD */
+  .step-card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; margin-bottom:10px; overflow:hidden; transition:border-color 0.2s; }
+  .step-card.done  { border-color:rgba(90,170,122,0.4); }
+  .step-card.active{ border-color:rgba(200,196,188,0.35); }
+  .step-card.skip  { opacity:0.45; }
+
+  .step-header { display:flex; align-items:center; gap:12px; padding:14px 16px; cursor:pointer; user-select:none; }
+  .step-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; font-size:11px; }
+  .step-card.done  .step-check { background:var(--green); border-color:var(--green); color:#fff; }
+  .step-card.active .step-check { border-color:var(--silver-dim); }
+
+  .step-num  { font-family:'Space Mono',monospace; font-size:9px; color:var(--silver-lo); flex-shrink:0; min-width:20px; }
+  .step-title{ font-family:'Space Mono',monospace; font-size:11px; font-weight:700; letter-spacing:1px; color:var(--silver); flex:1; }
+  .step-tag  { font-family:'Space Mono',monospace; font-size:8px; padding:2px 8px; border-radius:10px; flex-shrink:0; }
+  .step-tag.obligatorio { background:var(--red-dim); color:var(--red); }
+  .step-tag.clave       { background:var(--gold-dim); color:var(--gold); }
+  .step-tag.opcional    { background:var(--green-dim); color:var(--green); }
+
+  .step-body { padding:0 16px 14px 50px; display:none; }
+  .step-body.open { display:block; }
+  .step-desc { font-size:14px; color:var(--silver-dim); line-height:1.6; margin-bottom:10px; }
+  .step-rule { background:var(--bg3); border-left:3px solid var(--gold); padding:8px 12px; font-size:13px; color:var(--silver); font-style:italic; margin-bottom:10px; border-radius:0 3px 3px 0; }
+
+  /* DECISION NODE */
+  .decision { background:var(--bg3); border:1px solid var(--border); border-radius:4px; padding:14px 16px; margin-bottom:10px; }
+  .decision-q { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; color:var(--silver); margin-bottom:10px; }
+  .decision-opts { display:flex; flex-direction:column; gap:6px; }
+  .decision-btn { padding:9px 14px; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1px; cursor:pointer; text-align:left; transition:all 0.2s; display:flex; align-items:center; gap:8px; }
+  .decision-btn:hover { border-color:var(--border-hi); color:var(--silver); }
+  .decision-btn.yes { border-color:rgba(90,170,122,0.4); color:var(--green); }
+  .decision-btn.no  { border-color:rgba(192,85,85,0.4); color:var(--red); }
+  .decision-btn.warn{ border-color:rgba(200,148,58,0.4); color:var(--warn); }
+
+  /* ALERT BOXES */
+  .alert { padding:12px 14px; border-radius:3px; border:1px solid; margin-bottom:10px; font-size:13px; line-height:1.5; }
+  .alert.stop  { background:var(--red-dim);  border-color:rgba(192,85,85,0.3);  color:#e08080; }
+  .alert.go    { background:var(--green-dim);border-color:rgba(90,170,122,0.3); color:#80c8a0; }
+  .alert.warn  { background:var(--warn-dim); border-color:rgba(200,148,58,0.3); color:#d4a870; }
+  .alert strong{ font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; display:block; margin-bottom:4px; }
+
+  /* ACTION BUTTONS */
+  .btn-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .btn-check { padding:8px 14px; border-radius:3px; border:1px solid rgba(90,170,122,0.4); background:var(--green-dim); color:var(--green); font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
+  .btn-check:hover { background:rgba(90,170,122,0.25); }
+  .btn-skip { padding:8px 14px; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--silver-lo); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
+  .btn-skip:hover { border-color:var(--border-hi); color:var(--silver-dim); }
+
+  /* SECTION DIVIDER */
+  .section-gap { height:24px; }
+
+  /* RESET */
+  .btn-reset-all { display:block; margin:24px auto 0; padding:10px 24px; background:none; border:1px solid var(--border); color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+  .btn-reset-all:hover { border-color:var(--border-hi); color:var(--silver); }
+
+  /* COMPLETION */
+  .completion { display:none; background:var(--bg2); border:1px solid rgba(90,170,122,0.4); border-radius:4px; padding:28px; text-align:center; margin-bottom:20px; }
+  .completion.show { display:block; }
+  .completion-icon { font-size:40px; margin-bottom:12px; }
+  .completion-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--green); margin-bottom:8px; }
+  .completion-sub { font-size:14px; color:var(--silver-dim); font-style:italic; }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.25s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Diagrama BMO</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Protocolo de Ejecución</div>
+    <h1 class="page-h1">Diagrama de Flujo BMO</h1>
+    <p class="page-sub">Sigue cada paso del protocolo en tiempo real — marca completado al ejecutar</p>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-label">
+      <span>PROGRESO DEL PROTOCOLO</span>
+      <span id="progress-text">0 / 18 pasos</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <!-- COMPLETION BADGE -->
+  <div class="completion" id="completion">
+    <div class="completion-icon">✓</div>
+    <div class="completion-title">Protocolo BMO completado</div>
+    <div class="completion-sub">Todos los pasos ejecutados con disciplina. El mercado ya hizo su trabajo — tú también.</div>
+  </div>
+
+  <!-- ═══ FASE 1: NOCHE ANTERIOR ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge noche">FASE 1</span>
+    <span class="phase-title">Noche Anterior</span>
+    <span class="phase-time">Antes de dormir</span>
+  </div>
+
+  <div class="step-card" id="s1">
+    <div class="step-header" onclick="toggleBody('s1')">
+      <div class="step-check" id="chk1">○</div>
+      <span class="step-num">01</span>
+      <span class="step-title">REVISAR CALENDARIO DE EARNINGS</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body1">
+      <p class="step-desc">Identificar qué empresas reportan BMO al día siguiente. Filtro previo: empresa grande, volumen alto, difícil de manipular, entiendes el negocio, lejos de máximos históricos.</p>
+      <div class="step-rule">Solo 2 a 5 candidatos. Nunca uno solo, nunca más de cinco.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s1',1)">✓ COMPLETADO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s2">
+    <div class="step-header" onclick="toggleBody('s2')">
+      <div class="step-check" id="chk2">○</div>
+      <span class="step-num">02</span>
+      <span class="step-title">APLICAR RANKING PULSO PRELIMINAR</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body2">
+      <p class="step-desc">Calcular score PULSO para cada candidato con datos disponibles: EM estimado, ATR%, Short Interest. Descartar cualquier candidato con score menor a 8 preliminar.</p>
+      <div class="step-rule">Score &lt; 10 al día siguiente = no mirar. Score ≥ 10 = candidato serio.</div>
+      <div class="decision">
+        <div class="decision-q">¿Algún candidato tiene score preliminar ≥ 8?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s2',1)">✓ Sí — continuar con la preparación</button>
+          <button class="decision-btn no" onclick="noCandidate()">✕ No — no hay candidatos válidos esta noche</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s3">
+    <div class="step-header" onclick="toggleBody('s3')">
+      <div class="step-check" id="chk3">○</div>
+      <span class="step-num">03</span>
+      <span class="step-title">REVISAR CONTEXTO MACRO</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body3">
+      <p class="step-desc">Verificar el calendario económico del día siguiente: datos de empleo, Fed, inflación, PIB. Un dato macro importante puede dominar el mercado y cancelar cualquier earnings individual.</p>
+      <div class="step-rule">Si hay dato macro de alto impacto al día siguiente, exigir estructura más limpia y reducir tamaño.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s3',1)">✓ COMPLETADO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s4">
+    <div class="step-header" onclick="toggleBody('s4')">
+      <div class="step-check" id="chk4">○</div>
+      <span class="step-num">04</span>
+      <span class="step-title">PREPARAR LOS 3 ESCENARIOS POR CANDIDATO</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body4">
+      <p class="step-desc">Para cada candidato seleccionado, preparar mentalmente los tres escenarios posibles antes de dormir:</p>
+      <div class="step-rule">Escenario A: Gap alcista + retesteo limpio → largo. / Escenario B: Fakeout + pérdida de PMH → no entrar. / Escenario C: Gap bajista + estructura bajista → corto o no operar.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s4',1)">✓ COMPLETADO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ FASE 2: PRE-MARKET ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge pre">FASE 2</span>
+    <span class="phase-title">Pre-Market</span>
+    <span class="phase-time">8:00 – 9:20 AM EST</span>
+  </div>
+
+  <div class="step-card" id="s5">
+    <div class="step-header" onclick="toggleBody('s5')">
+      <div class="step-check" id="chk5">○</div>
+      <span class="step-num">05</span>
+      <span class="step-title">CONFIRMAR DIRECCIÓN Y MAGNITUD DEL GAP</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body5">
+      <p class="step-desc">Verificar el gap al momento de apertura del pre-market. ¿El precio abrió arriba o abajo del cierre previo? ¿El gap se sostiene o se está desinflando? ¿La magnitud coincide con el EM esperado?</p>
+      <div class="decision">
+        <div class="decision-q">¿Cómo se comporta el Gap?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s5',1)">✓ Gap sostenido — estructura prometedora</button>
+          <button class="decision-btn warn" onclick="markDone('s5',1)">⚠ Gap desinflándose — observar con cautela</button>
+          <button class="decision-btn no" onclick="markDone('s5',0)">✕ Gap muy pequeño (&lt;2%) — score caerá, probable descarte</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s6">
+    <div class="step-header" onclick="toggleBody('s6')">
+      <div class="step-check" id="chk6">○</div>
+      <span class="step-num">06</span>
+      <span class="step-title">RECALCULAR SCORE PULSO CON DATOS REALES</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body6">
+      <p class="step-desc">Actualizar el ranking con los datos reales del pre-market: Gap% real, Volumen Pre-market% real, ATR%, EM, Estructura Técnica visible en el gráfico.</p>
+      <div class="decision">
+        <div class="decision-q">¿El score PULSO actualizado es ≥ 10?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s6',1)">✓ Score ≥ 10 — candidato válido, continuar</button>
+          <button class="decision-btn no" onclick="discardStep('s6')">✕ Score &lt; 10 — DESCARTAR. No operar este activo hoy.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s7">
+    <div class="step-header" onclick="toggleBody('s7')">
+      <div class="step-check" id="chk7">○</div>
+      <span class="step-num">07</span>
+      <span class="step-title">MARCAR PMH Y PML EN EL GRÁFICO</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body7">
+      <p class="step-desc">Trazar las líneas horizontales del Pre-Market High (PMH) y Pre-Market Low (PML) en el gráfico. Estos son los dos niveles más importantes del día. Hacerlo antes de las 9:20 AM — nunca durante la apertura.</p>
+      <div class="step-rule">PMH = resistencia clave. PML = soporte clave. Todo lo que ocurre en apertura se interpreta en relación a estos dos niveles.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s7',1)">✓ PMH Y PML MARCADOS</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s8">
+    <div class="step-header" onclick="toggleBody('s8')">
+      <div class="step-check" id="chk8">○</div>
+      <span class="step-num">08</span>
+      <span class="step-title">CALCULAR TAMAÑO DE POSICIÓN</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body8">
+      <p class="step-desc">Calcular el número exacto de acciones usando la fórmula: Acciones = (Capital × 1%) / (Entrada estimada − Stop estimado). Tener la orden lista — no ejecutada, solo preparada.</p>
+      <div class="step-rule">Usar la calculadora en joseferrermd.com. El número de acciones no es una decisión — es un resultado matemático.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s8',1)">✓ TAMAÑO CALCULADO Y ORDEN LISTA</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ FASE 3: APERTURA ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge apertura">FASE 3</span>
+    <span class="phase-title">Apertura</span>
+    <span class="phase-time">9:30 – 9:45 AM EST</span>
+  </div>
+
+  <div class="step-card" id="s9">
+    <div class="step-header" onclick="toggleBody('s9')">
+      <div class="step-check" id="chk9">○</div>
+      <span class="step-num">09</span>
+      <span class="step-title">9:30 — OBSERVAR LA PRIMERA VELA</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body9">
+      <p class="step-desc">La primera vela de apertura es información — nunca es señal de entrada. Observar sin tocar. Medir el rango. Clasificar: ¿alcista o bajista? ¿Volumen alto o bajo? ¿El precio está sobre o bajo el PMH?</p>
+      <div class="alert stop"><strong>REGLA ABSOLUTA</strong>No entrar en la primera vela bajo ninguna circunstancia. El fakeout ocurre exactamente ahí.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s9',1)">✓ PRIMERA VELA OBSERVADA</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s10">
+    <div class="step-header" onclick="toggleBody('s10')">
+      <div class="step-check" id="chk10">○</div>
+      <span class="step-num">10</span>
+      <span class="step-title">9:31–9:33 — EVALUAR RUPTURA DEL PMH</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body10">
+      <p class="step-desc">¿El precio rompió el PMH con cuerpo sólido (cierre por encima) y volumen fuerte? Esta es la primera señal de intención alcista. Sin esta condición no hay setup largo.</p>
+      <div class="decision">
+        <div class="decision-q">¿Ruptura del PMH con volumen?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s10',1)">✓ Sí — ruptura limpia con volumen. Esperar retesteo.</button>
+          <button class="decision-btn warn" onclick="markDone('s10',1)">⚠ Ruptura débil / sin volumen — observar con cautela</button>
+          <button class="decision-btn no" onclick="markDone('s10',0)">✕ No rompió PMH — evaluar escenario bajista bajo PML</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s11">
+    <div class="step-header" onclick="toggleBody('s11')">
+      <div class="step-check" id="chk11">○</div>
+      <span class="step-num">11</span>
+      <span class="step-title">9:33–9:38 — EVALUAR EL RETESTEO</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body11">
+      <p class="step-desc">El precio retrocede hacia el PMH después de la ruptura. Evaluar si es retesteo LIMPIO o SUCIO.</p>
+      <div class="step-rule">LIMPIO: volumen decreciente en el retroceso, mechas cortas, nivel se sostiene, spread estable. / SUCIO: volumen alto en retroceso, mechas largas, pérdida del nivel → NO ENTRAR.</div>
+      <div class="decision">
+        <div class="decision-q">¿Cómo es el retesteo?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s11',1)">✓ Retesteo LIMPIO — preparar entrada en confirmación</button>
+          <button class="decision-btn no" onclick="markDone('s11',0)">✕ Retesteo SUCIO — NO entrar. Esperar siguiente oportunidad.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s12">
+    <div class="step-header" onclick="toggleBody('s12')">
+      <div class="step-check" id="chk12">○</div>
+      <span class="step-num">12</span>
+      <span class="step-title">9:38–9:40 — CONFIRMAR Y EJECUTAR ENTRADA</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body12">
+      <p class="step-desc">Vela de confirmación fuerte sobre el PMH + volumen + VWAP respetado = señal de entrada. Ejecutar la orden preparada. El stop automático va inmediatamente — no mental, automático.</p>
+      <div class="step-rule">El stop va bajo el mínimo del retesteo o bajo el PMH — donde la hipótesis queda invalidada. Colocarlo en el mismo instante que la entrada.</div>
+      <div class="alert go"><strong>MOMENTO DE EJECUCIÓN</strong>Entrada + stop automático en el mismo instante. No hay espacio entre los dos pasos.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s12',1)">✓ ENTRADA EJECUTADA Y STOP COLOCADO</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s13">
+    <div class="step-header" onclick="toggleBody('s13')">
+      <div class="step-check" id="chk13">○</div>
+      <span class="step-num">13</span>
+      <span class="step-title">9:45 AM — LÍMITE MÁXIMO DE ENTRADA</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body13">
+      <p class="step-desc">Si a las 9:45 AM no hay estructura clara de retesteo limpio + confirmación, el protocolo BMO de ese activo termina para el día.</p>
+      <div class="alert warn"><strong>REGLA DE LAS 9:45</strong>Si no hay señal estructural antes de las 9:45 AM — no se opera. El mercado cerrará mañana. Hay otro earnings la próxima semana.</div>
+      <div class="decision">
+        <div class="decision-q">¿Entraste antes de las 9:45?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s13',1)">✓ Sí — en posición, continuar con gestión</button>
+          <button class="decision-btn no" onclick="noTrade()">✕ No hubo señal — protocolo BMO cerrado para hoy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <!-- ═══ FASE 4: GESTIÓN ═══ -->
+  <div class="phase-header">
+    <span class="phase-badge gestion">FASE 4</span>
+    <span class="phase-title">Gestión Activa</span>
+    <span class="phase-time">Mientras el trade está abierto</span>
+  </div>
+
+  <div class="step-card" id="s14">
+    <div class="step-header" onclick="toggleBody('s14')">
+      <div class="step-check" id="chk14">○</div>
+      <span class="step-num">14</span>
+      <span class="step-title">MONITOREAR HASTA 1R</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body14">
+      <p class="step-desc">El precio avanza hacia 1R. Mantener la posición. Evaluar el momentum: ¿el volumen acompaña? ¿La estructura sigue intacta? ¿El precio respeta el VWAP? Si el stop se ejecuta aquí — pérdida de 1R, anotarla en bitácora y seguir.</p>
+      <div class="decision">
+        <div class="decision-q">¿Qué ocurre en el camino a 1R?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s14',1)">✓ Precio avanza con estructura — continuar</button>
+          <button class="decision-btn no" onclick="stopExecuted()">✕ Stop ejecutado — pérdida de 1R. Registrar y cerrar.</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s15">
+    <div class="step-header" onclick="toggleBody('s15')">
+      <div class="step-check" id="chk15">○</div>
+      <span class="step-num">15</span>
+      <span class="step-title">EN 1.5R — TOMAR PARCIAL DEL 60%</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body15">
+      <p class="step-desc">El precio llega a 1.5R. Cerrar el 60% de la posición inmediatamente. Sin debate, sin esperar "un poco más". El 60% asegura ganancia real independientemente de lo que ocurra después.</p>
+      <div class="alert go"><strong>ACCIÓN INMEDIATA EN 1.5R</strong>Cerrar 60% de acciones. La ganancia parcial es real y está asegurada.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s15',1)">✓ PARCIAL 60% EJECUTADO EN 1.5R</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s16">
+    <div class="step-header" onclick="toggleBody('s16')">
+      <div class="step-check" id="chk16">○</div>
+      <span class="step-num">16</span>
+      <span class="step-title">MOVER STOP A BREAK EVEN INMEDIATAMENTE</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body16">
+      <p class="step-desc">Después del parcial del 60%, el stop del 40% restante se mueve al precio de entrada. El trade ya no puede generar pérdida. Esta acción es inmediata — no después, no "cuando el precio siga subiendo".</p>
+      <div class="step-rule">Con el stop en break even, el peor resultado posible es ganancia del parcial en 1.5R. El riesgo es cero desde este momento.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s16',1)">✓ STOP MOVIDO A BREAK EVEN</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s17">
+    <div class="step-header" onclick="toggleBody('s17')">
+      <div class="step-check" id="chk17">○</div>
+      <span class="step-num">17</span>
+      <span class="step-title">EN 2R+ — CERRAR EL 40% RESTANTE</span>
+      <span class="step-tag clave">CLAVE</span>
+    </div>
+    <div class="step-body" id="body17">
+      <p class="step-desc">El precio llega a 2R o más. Cerrar el 40% restante según las señales de agotamiento: volumen decreciente, mechas superiores largas, pérdida de impulso. No intentar capturar el máximo del día.</p>
+      <div class="step-rule">No buscamos el home run. Buscamos capturar la parte estructuralmente repetible. El 40% en 2R completa el protocolo.</div>
+      <div class="decision">
+        <div class="decision-q">¿Cómo sale el 40% restante?</div>
+        <div class="decision-opts">
+          <button class="decision-btn yes" onclick="markDone('s17',1)">✓ Cerrado en 2R+ — trade completado exitosamente</button>
+          <button class="decision-btn warn" onclick="markDone('s17',1)">⚠ Stop a BE ejecutado — ganamos el parcial, el 40% salió en cero</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step-card" id="s18">
+    <div class="step-header" onclick="toggleBody('s18')">
+      <div class="step-check" id="chk18">○</div>
+      <span class="step-num">18</span>
+      <span class="step-title">REGISTRAR EN BITÁCORA</span>
+      <span class="step-tag obligatorio">OBLIGATORIO</span>
+    </div>
+    <div class="step-body" id="body18">
+      <p class="step-desc">Completar el registro en la bitácora: activo, tipo BMO/AMC, score PULSO, entrada, stop, salida parcial 1, salida parcial 2, resultado en R, estado emocional al entrar (S/F/E/A), y si se siguió el protocolo exactamente.</p>
+      <div class="step-rule">Sin bitácora no hay estadística. Sin estadística no puedes calcular tu expectancy real ni identificar errores recurrentes.</div>
+      <div class="btn-row">
+        <button class="btn-check" onclick="markDone('s18',1)">✓ BITÁCORA REGISTRADA</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-reset-all" onclick="resetAll()">↺ Reiniciar protocolo</button>
+
+</main>
+
+<script>
+  const TOTAL = 18;
+  let completed = 0;
+
+  function toggleBody(id) {
+    const body = document.getElementById('body' + id.replace('s',''));
+    body.classList.toggle('open');
+  }
+
+  function markDone(id, success) {
+    const card = document.getElementById(id);
+    const num  = id.replace('s','');
+    const chk  = document.getElementById('chk' + num);
+    const body = document.getElementById('body' + num);
+
+    if (card.classList.contains('done')) return;
+
+    card.classList.add('done');
+    chk.textContent = '✓';
+    body.classList.remove('open');
+
+    if (success) {
+      completed++;
+    }
+    updateProgress();
+  }
+
+  function discardStep(id) {
+    const card = document.getElementById(id);
+    const num  = id.replace('s','');
+    const chk  = document.getElementById('chk' + num);
+    const body = document.getElementById('body' + num);
+    card.classList.add('done', 'skip');
+    chk.textContent = '✕';
+    body.classList.remove('open');
+
+    // Show alert
+    const alert = document.createElement('div');
+    alert.className = 'alert stop fade-in';
+    alert.innerHTML = '<strong>CANDIDATO DESCARTADO</strong>Score PULSO insuficiente. No operar este activo hoy. Buscar próximo candidato o esperar siguiente earnings.';
+    card.after(alert);
+    completed++;
+    updateProgress();
+  }
+
+  function noCandidate() {
+    const alert = document.createElement('div');
+    alert.className = 'alert warn fade-in';
+    alert.style.marginBottom = '10px';
+    alert.innerHTML = '<strong>SIN CANDIDATOS ESTA NOCHE</strong>No hay earnings con score suficiente para mañana. Preparación finalizada — descansar. El mercado tendrá más oportunidades.';
+    document.getElementById('body2').after(alert);
+    markDone('s2', 0);
+  }
+
+  function noTrade() {
+    const alert = document.createElement('div');
+    alert.className = 'alert warn fade-in';
+    alert.style.marginBottom = '10px';
+    alert.innerHTML = '<strong>SIN SEÑAL ANTES DE LAS 9:45</strong>Protocolo BMO cerrado para este activo hoy. No se opera. El mercado abrirá mañana con nuevas oportunidades. La disciplina de no entrar es también una ejecución correcta del protocolo.';
+    document.getElementById('body13').after(alert);
+    markDone('s13', 0);
+  }
+
+  function stopExecuted() {
+    const alert = document.createElement('div');
+    alert.className = 'alert warn fade-in';
+    alert.style.marginBottom = '10px';
+    alert.innerHTML = '<strong>STOP EJECUTADO — −1R</strong>El sistema funcionó correctamente. Una pérdida de 1R es parte de la distribución estadística del método. Registrar en bitácora con el mismo criterio que una ganancia. El protocolo continúa en el próximo trade.';
+    document.getElementById('body14').after(alert);
+    markDone('s14', 0);
+    // Auto-mark remaining steps as skip
+    ['s15','s16','s17'].forEach(id => {
+      const card = document.getElementById(id);
+      card.classList.add('skip');
+    });
+    markDone('s18', 0);
+  }
+
+  function updateProgress() {
+    const pct = Math.round((completed / TOTAL) * 100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = completed + ' / ' + TOTAL + ' pasos';
+    if (completed >= TOTAL) {
+      document.getElementById('completion').classList.add('show');
+      document.getElementById('completion').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  }
+
+  function resetAll() {
+    completed = 0;
+    // Remove dynamic alerts
+    document.querySelectorAll('.alert.fade-in').forEach(el => el.remove());
+    // Reset all step cards
+    for (let i = 1; i <= TOTAL; i++) {
+      const card = document.getElementById('s' + i);
+      const chk  = document.getElementById('chk' + i);
+      const body = document.getElementById('body' + i);
+      if (card) { card.classList.remove('done','active','skip'); }
+      if (chk)  { chk.textContent = '○'; }
+      if (body) { body.classList.remove('open'); }
+    }
+    document.getElementById('completion').classList.remove('show');
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-text').textContent = '0 / 18 pasos';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+
+</body>
+</html>

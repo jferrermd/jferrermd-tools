@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Posición — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.35);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --green-dim:rgba(90,170,122,0.12);
+    --red:#c05555; --red-dim:rgba(192,85,85,0.12);
+    --warn:#c8943a; --warn-dim:rgba(200,148,58,0.12);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+  main { width:100%; max-width:700px; padding:0 18px 80px; }
+  .page-title { background:#e8e8ec; text-align:center; padding:32px 28px; border-bottom:1px solid rgba(100,160,255,0.15); margin-bottom:24px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#111 !important; text-transform:uppercase; margin-bottom:8px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:32px; font-weight:900; color:#111 !important; margin-bottom:6px; }
+  .page-sub { font-size:14px; color:#333 !important; font-style:italic; }
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:24px 24px; margin-bottom:16px; }
+  .card-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+  /* DIR BUTTONS — compact */
+  .dir-selector { display:flex; gap:8px; margin-bottom:20px; }
+  .dir-btn { flex:1; padding:7px 0; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px; cursor:pointer; transition:all 0.2s; }
+  .dir-btn.active-long  { border-color:#5aaa7a; background:#0d2a1a; color:#5aaa7a; }
+  .dir-btn.active-short { border-color:#c05555; background:#2a0d0d; color:#c05555; }
+  /* INPUT GRID */
+  .input-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 20px; }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--silver-dim); text-transform:uppercase; }
+  label span { display:block; color:var(--silver-lo); font-family:'EB Garamond',serif; font-size:11px; font-style:italic; letter-spacing:0; text-transform:none; margin-top:1px; }
+  .input-wrap { position:relative; display:inline-flex; align-items:center; }
+  .input-wrap .pfx { position:absolute; left:8px; font-family:'Space Mono',monospace; font-size:11px; color:#555; pointer-events:none; z-index:1; }
+  .input-wrap input { background:#e8e8e8; border:1px solid #ccc; border-radius:3px; color:#111; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; padding:10px 8px 10px 20px; width:140px; outline:none; transition:border-color 0.2s; }
+  .input-wrap input:focus { border-color:#888; background:#f2f2f2; }
+  .input-wrap input.error { border-color:var(--red); }
+  .err-msg { font-family:'Space Mono',monospace; font-size:8px; color:var(--red); letter-spacing:1px; display:none; margin-top:1px; }
+  .risk-row { display:flex; align-items:center; gap:10px; margin-top:4px; }
+  input[type="range"] { flex:1; -webkit-appearance:none; height:3px; background:var(--border); border-radius:2px; outline:none; cursor:pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--silver); border:2px solid var(--bg2); cursor:pointer; }
+  .risk-value { font-family:'Space Mono',monospace; font-size:15px; color:var(--silver); min-width:36px; text-align:right; }
+  .risk-note { font-size:11px; color:var(--silver-lo); font-style:italic; margin-top:2px; }
+  .btn-calc { width:100%; margin-top:20px; padding:14px; background:var(--silver); color:var(--bg); font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:4px; text-transform:uppercase; border:none; border-radius:3px; cursor:pointer; transition:background 0.2s; }
+  .btn-calc:hover { background:#e0dcd4; }
+  #results { display:none; }
+  .result-main { background:var(--bg2); border:1px solid var(--border-hi); border-radius:4px; padding:22px; text-align:center; margin-bottom:14px; }
+  .result-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-dim); margin-bottom:6px; }
+  .result-number { font-family:'Playfair Display',serif; font-size:60px; font-weight:900; color:var(--silver); line-height:1; letter-spacing:-2px; margin-bottom:4px; }
+  .result-unit { font-family:'EB Garamond',serif; font-size:15px; color:var(--silver-dim); font-style:italic; }
+  .result-dir { display:inline-block; margin-top:8px; padding:3px 12px; border-radius:20px; font-family:'Space Mono',monospace; font-size:9px; font-weight:700; letter-spacing:2px; }
+  .result-dir.long  { background:#0d2a1a; color:#5aaa7a; }
+  .result-dir.short { background:#2a0d0d; color:#c05555; }
+  .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .stat-box { background:var(--bg2); border:1px solid var(--border); border-radius:3px; padding:12px 14px; }
+  .stat-label { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:2px; color:var(--silver-lo); margin-bottom:4px; }
+  .stat-value { font-family:'Space Mono',monospace; font-size:14px; font-weight:700; color:var(--silver); }
+  .stat-value.red  { color:var(--red); }
+  .stat-value.gold { color:var(--gold); }
+  .risk-band { border-radius:3px; padding:11px 16px; display:flex; align-items:center; gap:10px; margin-bottom:14px; border:1px solid; }
+  .risk-band.ok   { background:var(--green-dim); border-color:rgba(90,170,122,0.3); }
+  .risk-band.warn { background:var(--warn-dim);  border-color:rgba(200,148,58,0.3); }
+  .risk-band.bad  { background:var(--red-dim);   border-color:rgba(192,85,85,0.3); }
+  .risk-band-icon { font-size:17px; flex-shrink:0; }
+  .risk-band-text { font-size:13px; line-height:1.4; }
+  .risk-band-text strong { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1px; display:block; margin-bottom:2px; }
+  .risk-band.ok   .risk-band-text strong { color:var(--green); }
+  .risk-band.warn .risk-band-text strong { color:var(--warn); }
+  .risk-band.bad  .risk-band-text strong { color:var(--red); }
+  .tramos-card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:18px 20px; margin-bottom:14px; }
+  .tramos-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  .tramos-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid rgba(200,196,188,0.06); }
+  .tramos-row:last-child { border-bottom:none; }
+  .tramo-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1px; color:var(--silver-dim); }
+  .tramo-label span { display:block; font-family:'EB Garamond',serif; font-size:11px; color:var(--silver-lo); font-style:italic; margin-top:1px; letter-spacing:0; }
+  .tramo-value { font-family:'Space Mono',monospace; font-size:13px; font-weight:700; text-align:right; }
+  .tramo-value.green { color:var(--green); }
+  .tramo-value.gold  { color:var(--gold); }
+  .footer-note { font-size:12px; color:var(--silver-lo); font-style:italic; text-align:center; line-height:1.6; border-top:1px solid var(--border); padding-top:16px; }
+  .footer-note strong { color:var(--silver-dim); font-style:normal; font-family:'Space Mono',monospace; font-size:9px; }
+  .btn-reset { background:none; border:1px solid var(--border); color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; padding:9px 18px; border-radius:3px; cursor:pointer; display:block; margin:14px auto 0; transition:all 0.2s; }
+  .btn-reset:hover { border-color:var(--border-hi); color:var(--silver); }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .animate-in { animation:fadeIn 0.3s ease forwards; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Calculadora de Posición</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Gestión de Riesgo</div>
+    <h1 class="page-h1">Calculadora de Posición</h1>
+    <p class="page-sub">Introduce los datos del trade — el sistema calcula el tamaño exacto</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Datos del trade</div>
+
+    <div class="dir-selector">
+      <button class="dir-btn active-long" id="btn-long" onclick="setDir('long')">▲ LARGO</button>
+      <button class="dir-btn" id="btn-short" onclick="setDir('short')">▼ CORTO</button>
+    </div>
+
+    <div class="input-grid">
+
+      <div class="field">
+        <label>Capital de cuenta <span>— total disponible</span></label>
+        <div class="input-wrap">
+          <span class="pfx">$</span>
+          <input type="text" id="capital" placeholder="1,000,000" inputmode="numeric" autocomplete="off">
+        </div>
+        <div class="err-msg" id="err-capital">Capital inválido</div>
+      </div>
+
+      <div class="field">
+        <label>Riesgo por trade <span>— recomendado 1%</span></label>
+        <div class="risk-row">
+          <input type="range" id="risk-slider" min="0.25" max="3" step="0.25" value="1">
+          <div class="risk-value" id="risk-display">1%</div>
+        </div>
+        <div class="risk-note">Máximo 1% — nunca superar el 2%</div>
+      </div>
+
+      <div class="field">
+        <label>Precio de entrada <span>— tu punto de compra</span></label>
+        <div class="input-wrap">
+          <span class="pfx">$</span>
+          <input type="text" id="entry" placeholder="52.40" inputmode="decimal" autocomplete="off">
+        </div>
+        <div class="err-msg" id="err-entry">Precio inválido</div>
+      </div>
+
+      <div class="field">
+        <label>Stop estructural <span id="stop-sub">— bajo la entrada</span></label>
+        <div class="input-wrap">
+          <span class="pfx">$</span>
+          <input type="text" id="stop" placeholder="51.90" inputmode="decimal" autocomplete="off">
+        </div>
+        <div class="err-msg" id="err-stop">Stop inválido</div>
+      </div>
+
+    </div>
+
+    <button class="btn-calc" onclick="calculate()">Calcular posición →</button>
+  </div>
+
+  <div id="results">
+
+    <div class="result-main animate-in">
+      <div class="result-label" id="res-label">Acciones a comprar</div>
+      <div class="result-number" id="res-shares">—</div>
+      <div class="result-unit">acciones</div>
+      <div class="result-dir long" id="res-dir">▲ LARGO</div>
+    </div>
+
+    <div class="stats-grid animate-in">
+      <div class="stat-box"><div class="stat-label">Riesgo real</div><div class="stat-value red" id="res-risk">—</div></div>
+      <div class="stat-box"><div class="stat-label">Capital desplegado</div><div class="stat-value" id="res-deployed">—</div></div>
+      <div class="stat-box"><div class="stat-label">Distancia al stop</div><div class="stat-value gold" id="res-distance">—</div></div>
+    </div>
+
+    <div class="risk-band animate-in" id="risk-band">
+      <div class="risk-band-icon" id="risk-icon">✓</div>
+      <div class="risk-band-text"><strong id="risk-title">—</strong><span id="risk-desc">—</span></div>
+    </div>
+
+    <div class="tramos-card animate-in">
+      <div class="tramos-title">Gestión por tramos — protocolo PULSO</div>
+      <div class="tramos-row">
+        <div class="tramo-label">Objetivo parcial 1 — 1.5R <span>Tomar 60% · mover stop a break even</span></div>
+        <div class="tramo-value green" id="t-target1">—</div>
+      </div>
+      <div class="tramos-row">
+        <div class="tramo-label">Acciones en parcial 1 <span>60% de la posición</span></div>
+        <div class="tramo-value green" id="t-shares1">—</div>
+      </div>
+      <div class="tramos-row">
+        <div class="tramo-label">Stop → Break Even <span>Mover inmediatamente después del parcial</span></div>
+        <div class="tramo-value gold" id="t-be">—</div>
+      </div>
+      <div class="tramos-row">
+        <div class="tramo-label">Objetivo parcial 2 — 2R <span>Salir del 40% restante</span></div>
+        <div class="tramo-value green" id="t-target2">—</div>
+      </div>
+      <div class="tramos-row">
+        <div class="tramo-label">Ganancia estimada total <span>60% en 1.5R + 40% en 2R</span></div>
+        <div class="tramo-value green" id="t-total">—</div>
+      </div>
+    </div>
+
+    <div class="footer-note animate-in">
+      <strong>Nota importante</strong><br>
+      El capital desplegado puede superar el saldo si tu broker ofrece margen intradía (4:1 típico).
+      El riesgo real es siempre el porcentaje definido — si el stop se ejecuta, pierdes únicamente ese monto.
+    </div>
+
+    <button class="btn-reset animate-in" onclick="resetCalc()">← Nueva calculación</button>
+  </div>
+
+</main>
+
+<script>
+  let direction = 'long';
+
+  function setDir(dir) {
+    direction = dir;
+    if (dir === 'long') {
+      document.getElementById('btn-long').className  = 'dir-btn active-long';
+      document.getElementById('btn-short').className = 'dir-btn';
+      document.getElementById('stop-sub').textContent = '— bajo la entrada';
+      document.getElementById('stop').placeholder = '51.90';
+    } else {
+      document.getElementById('btn-short').className = 'dir-btn active-short';
+      document.getElementById('btn-long').className  = 'dir-btn';
+      document.getElementById('stop-sub').textContent = '— sobre la entrada';
+      document.getElementById('stop').placeholder = '52.90';
+    }
+  }
+
+  function addCommas(v) {
+    const d = v.replace(/[^0-9]/g,''); if(!d) return '';
+    return parseInt(d,10).toLocaleString('en-US');
+  }
+  function addCommasDec(v) {
+    const c = v.replace(/[^0-9.]/g,''), p = c.split('.');
+    const i = p[0] ? parseInt(p[0],10).toLocaleString('en-US') : '';
+    return p.length===1 ? i : i+'.'+p[1].substring(0,2);
+  }
+  function parse(v) { return parseFloat(String(v).replace(/,/g,'')); }
+  function fmt(n,d=0) { return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function cur(n) { return '$'+fmt(n,2); }
+
+  document.getElementById('capital').addEventListener('input', function() {
+    const p=this.selectionStart, prev=this.value.length;
+    this.value=addCommas(this.value);
+    const d=this.value.length-prev; this.setSelectionRange(p+d,p+d);
+  });
+  ['entry','stop'].forEach(id => {
+    const el=document.getElementById(id);
+    el.addEventListener('input', function() {
+      if(this.value.endsWith('.')||this.value.endsWith('.0')||this.value.endsWith('.00')) return;
+      const p=this.selectionStart, prev=this.value.length;
+      this.value=addCommasDec(this.value);
+      const d=this.value.length-prev; this.setSelectionRange(p+d,p+d);
+    });
+    el.addEventListener('blur', function() {
+      const n=parse(this.value);
+      if(!isNaN(n)&&n>0) this.value=n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    });
+  });
+
+  const slider=document.getElementById('risk-slider');
+  slider.addEventListener('input',()=>{
+    document.getElementById('risk-display').textContent=parseFloat(slider.value).toFixed(2).replace(/\.?0+$/,'')+' %';
+  });
+
+  function showErr(fid,eid,msg) {
+    document.getElementById(fid).classList.add('error');
+    const e=document.getElementById(eid); if(msg) e.textContent=msg; e.style.display='block';
+  }
+  function clearErrors() {
+    document.querySelectorAll('.err-msg').forEach(e=>e.style.display='none');
+    document.querySelectorAll('input[type="text"]').forEach(e=>e.classList.remove('error'));
+  }
+
+  function calculate() {
+    clearErrors();
+    const capital = parse(document.getElementById('capital').value);
+    const riskPct = parseFloat(slider.value)/100;
+    const entry   = parse(document.getElementById('entry').value);
+    const stop    = parse(document.getElementById('stop').value);
+    const isShort = direction==='short';
+    let ok=true;
+    if(!capital||capital<=0) { showErr('capital','err-capital','Capital inválido'); ok=false; }
+    if(!entry||entry<=0)     { showErr('entry','err-entry','Precio inválido'); ok=false; }
+    if(isShort) {
+      if(!stop||stop<=0||stop<=entry) { showErr('stop','err-stop','En corto: stop debe ser mayor que la entrada'); ok=false; }
+    } else {
+      if(!stop||stop<=0||stop>=entry) { showErr('stop','err-stop','En largo: stop debe ser menor que la entrada'); ok=false; }
+    }
+    if(!ok) return;
+
+    const riskAmt  = capital*riskPct;
+    const distance = Math.abs(entry-stop);
+    const distPct  = (distance/entry)*100;
+    const shares   = Math.floor(riskAmt/distance);
+    const deployed = shares*entry;
+    const shares1  = Math.floor(shares*0.6);
+    const shares2  = shares-shares1;
+    const target1  = isShort ? entry-distance*1.5 : entry+distance*1.5;
+    const target2  = isShort ? entry-distance*2.0 : entry+distance*2.0;
+    const gain     = (shares1*distance*1.5)+(shares2*distance*2.0);
+    const rFinal   = gain/riskAmt;
+
+    document.getElementById('res-label').textContent   = isShort?'Acciones a vender en corto':'Acciones a comprar';
+    document.getElementById('res-shares').textContent  = fmt(shares);
+    const dirEl=document.getElementById('res-dir');
+    dirEl.textContent=isShort?'▼ CORTO':'▲ LARGO';
+    dirEl.className='result-dir '+(isShort?'short':'long');
+    document.getElementById('res-risk').textContent     = cur(riskAmt);
+    document.getElementById('res-deployed').textContent = cur(deployed);
+    document.getElementById('res-distance').textContent = cur(distance)+' ('+distPct.toFixed(1)+'%)';
+    document.getElementById('t-target1').textContent   = cur(target1)+(isShort?' ↓':' ↑');
+    document.getElementById('t-shares1').textContent   = fmt(shares1)+' acc.';
+    document.getElementById('t-be').textContent        = cur(entry);
+    document.getElementById('t-target2').textContent   = cur(target2)+(isShort?' ↓':' ↑');
+    document.getElementById('t-total').textContent     = '+'+cur(gain)+' (+'+rFinal.toFixed(1)+'R)';
+
+    const band=document.getElementById('risk-band');
+    band.className='risk-band animate-in';
+    const rPct=riskPct*100;
+    if(rPct<=1){
+      band.classList.add('ok');
+      document.getElementById('risk-icon').textContent='✓';
+      document.getElementById('risk-title').textContent='Riesgo controlado — dentro del protocolo';
+      document.getElementById('risk-desc').textContent='Con '+rPct+'% de riesgo, 10 stops consecutivos producen un drawdown del '+(100-Math.pow(1-riskPct,10)*100).toFixed(1)+'% — completamente recuperable.';
+    } else if(rPct<=2){
+      band.classList.add('warn');
+      document.getElementById('risk-icon').textContent='⚠';
+      document.getElementById('risk-title').textContent='Riesgo elevado — proceder con cautela';
+      document.getElementById('risk-desc').textContent='Por encima del 1% recomendado. Asegúrate de que la estructura sea impecable antes de ejecutar.';
+    } else {
+      band.classList.add('bad');
+      document.getElementById('risk-icon').textContent='✕';
+      document.getElementById('risk-title').textContent='Riesgo excesivo — fuera del protocolo PULSO';
+      document.getElementById('risk-desc').textContent='Superar el 2% compromete la expectancy y la cuenta. Reduce el tamaño o ajusta el stop.';
+    }
+
+    document.getElementById('results').style.display='block';
+    document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function resetCalc() {
+    document.getElementById('results').style.display='none';
+    ['capital','entry','stop'].forEach(id=>document.getElementById(id).value='');
+    slider.value=1; document.getElementById('risk-display').textContent='1%';
+    clearErrors(); window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  document.querySelectorAll('input[type="text"]').forEach(inp=>{
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') calculate(); });
+  });
+</script>
+</body>
+</html>

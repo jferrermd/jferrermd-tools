@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking PULSO — Método PULSO | joseferrermd.com</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0c10; --bg2:#111418; --bg3:#1a1d22;
+    --border:rgba(200,196,188,0.12); --border-hi:rgba(200,196,188,0.3);
+    --silver:#d0ccc4; --silver-dim:#8c8880; --silver-lo:#4a4844;
+    --gold:#c8a96e; --green:#5aaa7a; --red:#c05555; --warn:#c8943a;
+    --green-dim:rgba(90,170,122,0.15); --red-dim:rgba(192,85,85,0.15);
+    --warn-dim:rgba(200,148,58,0.15); --gold-dim:rgba(200,169,110,0.15);
+  }
+  body { background:var(--bg); color:var(--silver); font-family:'EB Garamond',serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+
+  /* HEADER */
+  header { width:100%; border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; background:var(--bg); }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo svg { width:34px; height:24px; }
+  .logo-name { font-family:'Playfair Display',serif; font-size:13px; font-weight:700; color:#e0dcd4; }
+  .logo-site { font-family:'Space Mono',monospace; font-size:9px; color:#6a8090; letter-spacing:1px; }
+  .header-tag { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:#4a5a60; text-transform:uppercase; }
+
+  main { width:100%; max-width:720px; padding:0 18px 80px; }
+
+  /* PAGE TITLE */
+  .page-title { background:#e8e8ec; text-align:center; padding:28px 28px 24px; border-bottom:1px solid #d0d0d8; margin-bottom:24px; }
+  .page-eyebrow { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:5px; color:#111 !important; text-transform:uppercase; margin-bottom:8px; }
+  .page-h1 { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:#111 !important; margin-bottom:6px; }
+  .page-sub { font-size:13px; color:#444 !important; font-style:italic; }
+
+  /* ACTIVO INPUT */
+  .activo-row { display:flex; gap:12px; align-items:flex-end; margin-bottom:20px; }
+  .activo-field { flex:1; display:flex; flex-direction:column; gap:5px; }
+  .activo-field label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; color:var(--silver-dim); text-transform:uppercase; }
+  .activo-input { background:#e8e8e8; border:1px solid #ccc; border-radius:3px; color:#111; font-family:'Space Mono',monospace; font-size:15px; font-weight:700; padding:10px 12px; outline:none; width:100%; }
+  .activo-input:focus { border-color:#888; }
+  .btn-reset-activo { padding:10px 16px; border-radius:3px; border:1px solid var(--border); background:transparent; color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:2px; cursor:pointer; white-space:nowrap; transition:all 0.2s; }
+  .btn-reset-activo:hover { border-color:var(--border-hi); color:var(--silver); }
+
+  /* CARD */
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:22px 22px; margin-bottom:16px; }
+  .card-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:4px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:18px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+
+  /* FACTOR ROWS */
+  .factor { margin-bottom:18px; }
+  .factor:last-child { margin-bottom:0; }
+  .factor-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .factor-name { font-family:'Space Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1px; color:var(--silver); }
+  .factor-score { font-family:'Space Mono',monospace; font-size:14px; font-weight:700; color:var(--silver-lo); transition:color 0.2s; }
+  .factor-score.s0 { color:var(--red); }
+  .factor-score.s1 { color:var(--warn); }
+  .factor-score.s2 { color:var(--gold); }
+  .factor-score.s3 { color:var(--green); }
+  .factor-hint { font-size:12px; color:var(--silver-lo); font-style:italic; margin-bottom:6px; }
+
+  /* OPTION BUTTONS */
+  .opts { display:grid; grid-template-columns:repeat(4, 1fr); gap:6px; }
+  .opt-btn {
+    padding:8px 4px; border-radius:3px; border:1px solid var(--border);
+    background:transparent; color:var(--silver-dim);
+    font-family:'Space Mono',monospace; font-size:9px; font-weight:700;
+    letter-spacing:0; cursor:pointer; text-align:center;
+    transition:all 0.18s; line-height:1.3;
+  }
+  .opt-btn:hover { border-color:var(--border-hi); color:var(--silver); }
+  .opt-btn.selected-0 { background:var(--red-dim);  border-color:rgba(192,85,85,0.5);  color:var(--red); }
+  .opt-btn.selected-1 { background:var(--warn-dim); border-color:rgba(200,148,58,0.5); color:var(--warn); }
+  .opt-btn.selected-2 { background:var(--gold-dim); border-color:rgba(200,169,110,0.5);color:var(--gold); }
+  .opt-btn.selected-3 { background:var(--green-dim);border-color:rgba(90,170,122,0.5); color:var(--green); }
+
+  /* INPUT FIELD variant for numeric entry */
+  .factor-input-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .factor-num-input { background:#e8e8e8; border:1px solid #ccc; border-radius:3px; color:#111; font-family:'Space Mono',monospace; font-size:14px; font-weight:700; padding:8px 10px; width:120px; outline:none; }
+  .factor-num-input:focus { border-color:#888; }
+  .factor-unit { font-family:'Space Mono',monospace; font-size:11px; color:var(--silver-dim); }
+
+  /* RESULTADO */
+  .result-card { border-radius:4px; padding:28px 24px; text-align:center; margin-bottom:16px; border:2px solid; transition:all 0.3s; }
+  .result-card.verde  { background:var(--green-dim); border-color:rgba(90,170,122,0.5); }
+  .result-card.amarillo{ background:var(--warn-dim); border-color:rgba(200,148,58,0.5); }
+  .result-card.rojo   { background:var(--red-dim);  border-color:rgba(192,85,85,0.5); }
+  .result-card.neutro { background:var(--bg2); border-color:var(--border); }
+
+  .result-activo { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:4px; color:var(--silver-dim); margin-bottom:6px; }
+  .result-score-wrap { display:flex; align-items:baseline; justify-content:center; gap:6px; margin-bottom:4px; }
+  .result-score { font-family:'Playfair Display',serif; font-size:80px; font-weight:900; line-height:1; letter-spacing:-3px; transition:color 0.3s; }
+  .result-of { font-family:'Space Mono',monospace; font-size:16px; color:var(--silver-dim); }
+  .result-card.verde   .result-score { color:var(--green); }
+  .result-card.amarillo .result-score { color:var(--warn); }
+  .result-card.rojo    .result-score { color:var(--red); }
+  .result-card.neutro  .result-score { color:var(--silver-lo); }
+
+  .result-label { font-family:'Playfair Display',serif; font-size:20px; font-weight:700; margin-bottom:8px; }
+  .result-card.verde   .result-label { color:var(--green); }
+  .result-card.amarillo .result-label { color:var(--warn); }
+  .result-card.rojo    .result-label { color:var(--red); }
+  .result-card.neutro  .result-label { color:var(--silver-lo); }
+
+  .result-desc { font-size:14px; font-style:italic; color:var(--silver-dim); line-height:1.5; }
+
+  /* MINI BREAKDOWN */
+  .breakdown { background:var(--bg2); border:1px solid var(--border); border-radius:4px; padding:16px 18px; margin-bottom:16px; display:none; }
+  .breakdown.show { display:block; }
+  .breakdown-title { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; color:var(--silver-dim); text-transform:uppercase; margin-bottom:12px; }
+  .breakdown-row { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(200,196,188,0.06); }
+  .breakdown-row:last-child { border-bottom:none; }
+  .breakdown-factor { font-family:'Space Mono',monospace; font-size:10px; color:var(--silver-dim); }
+  .breakdown-pts { font-family:'Space Mono',monospace; font-size:12px; font-weight:700; }
+  .breakdown-pts.s0 { color:var(--red); }
+  .breakdown-pts.s1 { color:var(--warn); }
+  .breakdown-pts.s2 { color:var(--gold); }
+  .breakdown-pts.s3 { color:var(--green); }
+
+  /* REFERENCE TABLE */
+  .ref-table { width:100%; border-collapse:collapse; margin-top:12px; }
+  .ref-table th { font-family:'Space Mono',monospace; font-size:8px; letter-spacing:2px; color:var(--silver-lo); text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); }
+  .ref-table td { font-family:'Space Mono',monospace; font-size:9px; padding:7px 8px; border-bottom:1px solid rgba(200,196,188,0.06); color:var(--silver-dim); }
+  .ref-table tr:last-child td { border-bottom:none; }
+  .ref-table td:first-child { color:var(--silver); font-weight:700; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:8px; font-weight:700; }
+  .badge.verde    { background:var(--green-dim); color:var(--green); }
+  .badge.amarillo { background:var(--warn-dim);  color:var(--warn); }
+  .badge.rojo     { background:var(--red-dim);   color:var(--red); }
+  .badge.neutro   { background:rgba(200,196,188,0.08); color:var(--silver-lo); }
+
+  /* RESET */
+  .btn-reset { display:block; margin:8px auto 0; padding:10px 22px; background:none; border:1px solid var(--border); color:var(--silver-dim); font-family:'Space Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+  .btn-reset:hover { border-color:var(--border-hi); color:var(--silver); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeIn 0.25s ease forwards; }
+
+  @keyframes pulse-green {
+    0%   { box-shadow: 0 0 0 0 rgba(90,170,122,0.7), 0 0 0 0 rgba(90,170,122,0.4); border-color: rgba(90,170,122,0.9); }
+    50%  { box-shadow: 0 0 24px 8px rgba(90,170,122,0.35), 0 0 48px 16px rgba(90,170,122,0.15); border-color: rgba(90,170,122,1); }
+    100% { box-shadow: 0 0 0 0 rgba(90,170,122,0.7), 0 0 0 0 rgba(90,170,122,0.4); border-color: rgba(90,170,122,0.9); }
+  }
+  @keyframes pulse-text {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.55; }
+  }
+  .result-card.perfecto {
+    background: rgba(90,170,122,0.2);
+    border-color: rgba(90,170,122,0.9);
+    animation: pulse-green 1.8s ease-in-out infinite;
+  }
+  .result-card.perfecto .result-score { color: #6dcc94; }
+  .result-card.perfecto .result-label { color: #6dcc94; }
+  .evento-inusual {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #6dcc94;
+    background: rgba(90,170,122,0.2);
+    border: 1px solid rgba(90,170,122,0.5);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-bottom: 10px;
+    animation: pulse-text 1.8s ease-in-out infinite;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 34 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="17" cy="12" r="11" stroke="#c8c4bc" stroke-width="1" opacity="0.22"/>
+      <polyline points="1,12 6,12 9,5 12,19 15,2 18,16 21,12 26,12 29,8 32,12 34,12"
+        stroke="#9ec8f4" stroke-width="1.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="logo-name">José Ferrer, MD</div>
+      <div class="logo-site">joseferrermd.com · Método PULSO</div>
+    </div>
+  </div>
+  <div class="header-tag">Ranking PULSO</div>
+</header>
+
+<main>
+
+  <div class="page-title">
+    <div class="page-eyebrow">Método PULSO · Selección de Candidatos</div>
+    <h1 class="page-h1">Calculadora de Ranking PULSO</h1>
+    <p class="page-sub">Introduce los 5 factores — el sistema calcula el score y la decisión automáticamente</p>
+  </div>
+
+  <!-- ACTIVO -->
+  <div class="activo-row">
+    <div class="activo-field">
+      <label>Ticker / Activo</label>
+      <input type="text" class="activo-input" id="ticker" placeholder="AAPL" maxlength="8" oninput="this.value=this.value.toUpperCase(); updateResult()">
+    </div>
+    <button class="btn-reset-activo" onclick="resetAll()">↺ Nuevo activo</button>
+  </div>
+
+  <!-- RESULTADO LIVE -->
+  <div class="result-card neutro fade-in" id="result-card">
+    <div class="result-activo" id="result-activo">— ACTIVO —</div>
+    <div class="result-score-wrap">
+      <div class="result-score" id="result-score">0</div>
+      <div class="result-of">/ 15</div>
+    </div>
+    <div class="evento-inusual" id="evento-badge" style="display:none;">⚡ EVENTO INUSUAL — SCORE PERFECTO</div>
+    <div class="result-label" id="result-label">Introduce los datos</div>
+    <div class="result-desc" id="result-desc">Selecciona los valores de cada factor para calcular el ranking PULSO.</div>
+  </div>
+
+  <!-- BREAKDOWN -->
+  <div class="breakdown" id="breakdown">
+    <div class="breakdown-title">Desglose por factor</div>
+    <div class="breakdown-row"><span class="breakdown-factor">Expected Move (EM%)</span><span class="breakdown-pts" id="bd-em">—</span></div>
+    <div class="breakdown-row"><span class="breakdown-factor">ATR%</span><span class="breakdown-pts" id="bd-atr">—</span></div>
+    <div class="breakdown-row"><span class="breakdown-factor">Volumen Pre-market%</span><span class="breakdown-pts" id="bd-vol">—</span></div>
+    <div class="breakdown-row"><span class="breakdown-factor">Gap%</span><span class="breakdown-pts" id="bd-gap">—</span></div>
+    <div class="breakdown-row"><span class="breakdown-factor">Estructura Técnica</span><span class="breakdown-pts" id="bd-est">—</span></div>
+  </div>
+
+  <!-- FACTORES -->
+  <div class="card">
+    <div class="card-title">Factor 1 — Expected Move (EM%)</div>
+    <p class="factor-hint">Movimiento esperado implícito en opciones para este earnings. Mide expectativa futura — NO confundir con ATR.</p>
+    <div class="factor-input-row">
+      <input type="text" class="factor-num-input" id="em-val" placeholder="6.5" inputmode="decimal" oninput="autoScoreEM()" autocomplete="off">
+      <span class="factor-unit">% de EM</span>
+      <span class="factor-score" id="em-score">— pts</span>
+    </div>
+    <div class="opts" id="opts-em">
+      <button class="opt-btn" onclick="selectOpt('em',0,'&lt; 3%')">0 pts<br>&lt; 3%</button>
+      <button class="opt-btn" onclick="selectOpt('em',1,'3–6%')">1 pt<br>3–6%</button>
+      <button class="opt-btn" onclick="selectOpt('em',2,'6–10%')">2 pts<br>6–10%</button>
+      <button class="opt-btn" onclick="selectOpt('em',3,'&gt; 10%')">3 pts<br>&gt; 10%</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Factor 2 — ATR%</div>
+    <p class="factor-hint">Rango verdadero promedio — volatilidad histórica del activo. Mide comportamiento pasado.</p>
+    <div class="factor-input-row">
+      <input type="text" class="factor-num-input" id="atr-val" placeholder="3.5" inputmode="decimal" oninput="autoScoreATR()" autocomplete="off">
+      <span class="factor-unit">% de ATR</span>
+      <span class="factor-score" id="atr-score">— pts</span>
+    </div>
+    <div class="opts" id="opts-atr">
+      <button class="opt-btn" onclick="selectOpt('atr',0,'&lt; 2%')">0 pts<br>&lt; 2%</button>
+      <button class="opt-btn" onclick="selectOpt('atr',1,'2–4%')">1 pt<br>2–4%</button>
+      <button class="opt-btn" onclick="selectOpt('atr',2,'4–6%')">2 pts<br>4–6%</button>
+      <button class="opt-btn" onclick="selectOpt('atr',3,'&gt; 6%')">3 pts<br>&gt; 6%</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Factor 3 — Volumen Pre-market%</div>
+    <p class="factor-hint">Volumen del pre-market como porcentaje del volumen promedio diario. Mide participación institucional.</p>
+    <div class="factor-input-row">
+      <input type="text" class="factor-num-input" id="vol-val" placeholder="15" inputmode="decimal" oninput="autoScoreVol()" autocomplete="off">
+      <span class="factor-unit">% del vol. promedio</span>
+      <span class="factor-score" id="vol-score">— pts</span>
+    </div>
+    <div class="opts" id="opts-vol">
+      <button class="opt-btn" onclick="selectOpt('vol',0,'&lt; 5%')">0 pts<br>&lt; 5%</button>
+      <button class="opt-btn" onclick="selectOpt('vol',1,'5–10%')">1 pt<br>5–10%</button>
+      <button class="opt-btn" onclick="selectOpt('vol',2,'10–20%')">2 pts<br>10–20%</button>
+      <button class="opt-btn" onclick="selectOpt('vol',3,'&gt; 20%')">3 pts<br>&gt; 20%</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Factor 4 — Gap%</div>
+    <p class="factor-hint">Diferencia porcentual entre el cierre previo y el precio de apertura del pre-market.</p>
+    <div class="factor-input-row">
+      <input type="text" class="factor-num-input" id="gap-val" placeholder="7.2" inputmode="decimal" oninput="autoScoreGap()" autocomplete="off">
+      <span class="factor-unit">% de gap</span>
+      <span class="factor-score" id="gap-score">— pts</span>
+    </div>
+    <div class="opts" id="opts-gap">
+      <button class="opt-btn" onclick="selectOpt('gap',0,'&lt; 2%')">0 pts<br>&lt; 2%</button>
+      <button class="opt-btn" onclick="selectOpt('gap',1,'2–5%')">1 pt<br>2–5%</button>
+      <button class="opt-btn" onclick="selectOpt('gap',2,'5–10%')">2 pts<br>5–10%</button>
+      <button class="opt-btn" onclick="selectOpt('gap',3,'&gt; 10%')">3 pts<br>&gt; 10%</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Factor 5 — Estructura Técnica Pre-market</div>
+    <p class="factor-hint">Calidad visual de la estructura en el gráfico de pre-market. Evaluación cualitativa.</p>
+    <div class="opts" style="grid-template-columns:repeat(2,1fr);" id="opts-est">
+      <button class="opt-btn" onclick="selectOpt('est',0,'Caótica')">0 pts<br>Caótica</button>
+      <button class="opt-btn" onclick="selectOpt('est',1,'Débil')">1 pt<br>Débil</button>
+      <button class="opt-btn" onclick="selectOpt('est',2,'Ordenada')">2 pts<br>Ordenada</button>
+      <button class="opt-btn" onclick="selectOpt('est',3,'Tendencial')">3 pts<br>Tendencial limpia</button>
+    </div>
+    <div style="margin-top:8px;">
+      <span class="factor-score" id="est-score">— pts</span>
+    </div>
+  </div>
+
+  <!-- REFERENCE TABLE -->
+  <div class="card">
+    <div class="card-title">Tabla de referencia — interpretación del score</div>
+    <table class="ref-table">
+      <thead>
+        <tr><th>SCORE</th><th>DECISIÓN</th><th>ESTADO</th><th>QUÉ SIGNIFICA</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0 – 5</td><td>No mirar</td><td><span class="badge rojo">ROJO</span></td><td>Sin estructura ni expectativa suficiente</td></tr>
+        <tr><td>6 – 9</td><td>Observar</td><td><span class="badge rojo">ROJO</span></td><td>Interés moderado — sin comprometer capital</td></tr>
+        <tr><td>10 – 11</td><td>Candidato</td><td><span class="badge amarillo">AMARILLO</span></td><td>Proceder con preparación completa</td></tr>
+        <tr><td>12 – 15</td><td>Alta prioridad</td><td><span class="badge verde">VERDE</span></td><td>Máxima atención — evento excepcional</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:var(--silver-lo);font-style:italic;margin-top:10px;">Regla de hierro: score &lt; 10 = descartar sin excepciones.</p>
+  </div>
+
+  <button class="btn-reset" onclick="resetAll()">↺ Calcular nuevo activo</button>
+
+</main>
+
+<script>
+  // Scores per factor
+  const scores = { em: null, atr: null, vol: null, gap: null, est: null };
+  const labels = { em: null, atr: null, vol: null, gap: null, est: null };
+
+  const colorClass = ['s0','s1','s2','s3'];
+  const ptsLabel   = ['0 pts','1 pt','2 pts','3 pts'];
+
+  function selectOpt(factor, pts, label) {
+    scores[factor] = pts;
+    labels[factor] = label;
+    // Update buttons
+    const opts = document.querySelectorAll(`#opts-${factor} .opt-btn`);
+    opts.forEach((b,i) => {
+      b.className = 'opt-btn' + (i === pts ? ' selected-'+pts : '');
+    });
+    // Update factor score display
+    const scoreEl = document.getElementById(factor + '-score');
+    if (scoreEl) {
+      scoreEl.textContent = ptsLabel[pts];
+      scoreEl.className = 'factor-score ' + colorClass[pts];
+    }
+    // Clear numeric input if manual selection
+    updateResult();
+  }
+
+  // Auto-score from numeric input
+  function autoScoreEM() {
+    const v = parseFloat(document.getElementById('em-val').value);
+    if (isNaN(v)) return;
+    if (v < 3)  selectOpt('em', 0, '< 3%');
+    else if (v < 6)  selectOpt('em', 1, '3–6%');
+    else if (v <= 10) selectOpt('em', 2, '6–10%');
+    else selectOpt('em', 3, '> 10%');
+  }
+  function autoScoreATR() {
+    const v = parseFloat(document.getElementById('atr-val').value);
+    if (isNaN(v)) return;
+    if (v < 2)  selectOpt('atr', 0, '< 2%');
+    else if (v < 4)  selectOpt('atr', 1, '2–4%');
+    else if (v <= 6) selectOpt('atr', 2, '4–6%');
+    else selectOpt('atr', 3, '> 6%');
+  }
+  function autoScoreVol() {
+    const v = parseFloat(document.getElementById('vol-val').value);
+    if (isNaN(v)) return;
+    if (v < 5)  selectOpt('vol', 0, '< 5%');
+    else if (v < 10)  selectOpt('vol', 1, '5–10%');
+    else if (v <= 20) selectOpt('vol', 2, '10–20%');
+    else selectOpt('vol', 3, '> 20%');
+  }
+  function autoScoreGap() {
+    const v = parseFloat(document.getElementById('gap-val').value);
+    if (isNaN(v)) return;
+    if (v < 2)  selectOpt('gap', 0, '< 2%');
+    else if (v < 5)  selectOpt('gap', 1, '2–5%');
+    else if (v <= 10) selectOpt('gap', 2, '5–10%');
+    else selectOpt('gap', 3, '> 10%');
+  }
+
+  function updateResult() {
+    const ticker = document.getElementById('ticker').value.trim() || '—';
+    const filled = Object.values(scores).filter(v => v !== null);
+    const total  = filled.reduce((a,b) => a+b, 0);
+    const allFilled = filled.length === 5;
+
+    // Update activo label
+    document.getElementById('result-activo').textContent = ticker === '—' ? '— ACTIVO —' : ticker;
+
+    // Score display
+    document.getElementById('result-score').textContent = allFilled ? total : filled.length > 0 ? total : '—';
+
+    // Card class + labels
+    const card  = document.getElementById('result-card');
+    const label = document.getElementById('result-label');
+    const desc  = document.getElementById('result-desc');
+
+    card.className = 'result-card fade-in';
+
+    if (!allFilled) {
+      card.classList.add('neutro');
+      document.getElementById('result-score').textContent = filled.length > 0 ? total : '—';
+      label.textContent = filled.length > 0 ? `${filled.length} de 5 factores completados` : 'Introduce los datos';
+      desc.textContent = 'Selecciona los valores de cada factor para calcular el ranking PULSO.';
+      document.getElementById('breakdown').classList.remove('show');
+      return;
+    }
+
+    // All 5 filled
+    document.getElementById('result-score').textContent = total;
+    document.getElementById('breakdown').classList.add('show');
+
+    // Update breakdown
+    ['em','atr','vol','gap','est'].forEach(f => {
+      const el = document.getElementById('bd-' + f);
+      const s  = scores[f];
+      el.textContent = ptsLabel[s] + (labels[f] ? ' — ' + labels[f] : '');
+      el.className = 'breakdown-pts ' + colorClass[s];
+    });
+
+    if (total === 15) {
+      card.classList.add('perfecto');
+      // Inject evento inusual badge above label
+      const badge = document.getElementById('evento-badge');
+      if (badge) badge.style.display = 'inline-block';
+      label.textContent = '★ ACTIVO DE PRIORIDAD ABSOLUTA';
+      desc.textContent = 'Score perfecto 15/15. Evento inusual — alta probabilidad de conseguir resultados excepcionales. Todos los factores alineados. Preparación máxima, tamaño completo, máxima concentración.';
+    } else if (total >= 12) {
+      card.classList.add('verde');
+      const badge = document.getElementById('evento-badge');
+      if (badge) badge.style.display = 'none';
+      label.textContent = '✓ Alta prioridad — máxima atención';
+      desc.textContent = `Score de ${total}/15. Evento excepcional con estructura y expectativa sólidas. Este activo merece preparación completa y posición de tamaño completo.`;
+    } else if (total >= 10) {
+      card.classList.add('amarillo');
+      const badge2 = document.getElementById('evento-badge');
+      if (badge2) badge2.style.display = 'none';
+      label.textContent = '⚠ Candidato serio — proceder con cuidado';
+      desc.textContent = `Score de ${total}/15. Cumple el mínimo del protocolo. Proceder con preparación completa pero evaluar qué factor está limitando el score antes de ejecutar.`;
+    } else {
+      card.classList.add('rojo');
+      const badge3 = document.getElementById('evento-badge');
+      if (badge3) badge3.style.display = 'none';
+      label.textContent = '✕ Descartado — no operar';
+      desc.textContent = `Score de ${total}/15. Por debajo del mínimo de 10 puntos. Regla de hierro: no operar este activo hoy. Buscar un candidato con mejor estructura.`;
+    }
+  }
+
+  function resetAll() {
+    ['em','atr','vol','gap','est'].forEach(f => {
+      scores[f] = null;
+      labels[f] = null;
+      const scoreEl = document.getElementById(f + '-score');
+      if (scoreEl) { scoreEl.textContent = '— pts'; scoreEl.className = 'factor-score'; }
+      document.querySelectorAll(`#opts-${f} .opt-btn`).forEach(b => b.className = 'opt-btn');
+    });
+    ['em-val','atr-val','vol-val','gap-val'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('ticker').value = '';
+    document.getElementById('result-card').className = 'result-card neutro fade-in';
+    document.getElementById('result-activo').textContent = '— ACTIVO —';
+    document.getElementById('result-score').textContent = '—';
+    const badgeR = document.getElementById('evento-badge'); if(badgeR) badgeR.style.display='none';
+    document.getElementById('result-label').textContent = 'Introduce los datos';
+    document.getElementById('result-desc').textContent = 'Selecciona los valores de cada factor para calcular el ranking PULSO.';
+    document.getElementById('breakdown').classList.remove('show');
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+</script>
+
+</body>
+</html>
