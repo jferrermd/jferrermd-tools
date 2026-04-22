@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Herramientas PULSO — José Ferrer, MD</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;1,400&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#181c1e; font-family:'Crimson Text',serif; color:#e8e0d0; min-height:100vh; padding:40px 20px; }
+
+.header { text-align:center; margin-bottom:60px; }
+.logo { font-family:'Cinzel',serif; font-size:13px; letter-spacing:4px; color:rgba(200,185,155,0.5); margin-bottom:16px; }
+.title { font-family:'Cinzel',serif; font-size:32px; font-weight:700; color:transparent; background:linear-gradient(160deg,#e8e0d0,#f0ead8,#c8bfa8); -webkit-background-clip:text; background-clip:text; margin-bottom:8px; }
+.subtitle { font-family:'Crimson Text',serif; font-size:18px; font-style:italic; color:rgba(200,185,155,0.6); }
+.rule { width:200px; height:1px; background:linear-gradient(to right,transparent,rgba(200,185,155,0.5),transparent); margin:20px auto; }
+
+.grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; max-width:1000px; margin:0 auto; }
+
+.card { background:#1e2528; border:1px solid rgba(200,185,155,0.15); border-radius:8px; padding:28px; transition:border-color 0.2s; }
+.card:hover { border-color:rgba(200,185,155,0.4); }
+.card-num { font-family:'Space Mono',monospace; font-size:11px; color:rgba(200,185,155,0.4); margin-bottom:10px; letter-spacing:2px; }
+.card-title { font-family:'Cinzel',serif; font-size:16px; font-weight:700; color:#e8e0d0; margin-bottom:10px; }
+.card-desc { font-size:15px; color:rgba(200,185,155,0.65); line-height:1.6; margin-bottom:20px; }
+.btn { display:block; text-align:center; background:linear-gradient(135deg,#c8a96e,#a8893e); color:#1a1a1a; font-family:'Cinzel',serif; font-size:12px; letter-spacing:2px; font-weight:700; padding:12px 24px; border-radius:4px; text-decoration:none; transition:opacity 0.2s; }
+.btn:hover { opacity:0.85; }
+
+.footer { text-align:center; margin-top:60px; padding-top:30px; border-top:1px solid rgba(200,185,155,0.1); }
+.footer a { color:rgba(200,185,155,0.5); text-decoration:none; font-family:'Cinzel',serif; font-size:12px; letter-spacing:2px; }
+.footer a:hover { color:rgba(200,185,155,0.8); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">JOSÉ FERRER, MD · @JFERRERMD</div>
+  <div class="title">8 Herramientas del Método PULSO</div>
+  <div class="rule"></div>
+  <div class="subtitle">Gratuitas para lectores del libro · Diseñadas para usar en tiempo real</div>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="card-num">01</div>
+    <div class="card-title">Calculadora de Posición</div>
+    <div class="card-desc">Largo y corto. Gestión por tramos automática con cálculo dinámico de 1.5R y 2R+.</div>
+    <a href="calculadora_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">02</div>
+    <div class="card-title">Ranking PULSO</div>
+    <div class="card-desc">Scorer de 0 a 15 puntos. Detecta el Evento Inusual automáticamente.</div>
+    <a href="ranking_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">03</div>
+    <div class="card-title">Diagrama BMO</div>
+    <div class="card-desc">Protocolo completo Before Market Open en 18 pasos interactivos.</div>
+    <a href="diagrama_bmo_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">04</div>
+    <div class="card-title">Diagrama AMC</div>
+    <div class="card-desc">Protocolo After Market Close con los 4 niveles críticos: AH High, AH Low, PMH, PML.</div>
+    <a href="diagrama_amc_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">05</div>
+    <div class="card-title">Bitácora de Trades</div>
+    <div class="card-desc">Registro permanente e inalterable. Dashboard de estadísticas en tiempo real.</div>
+    <a href="bitacora_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">06</div>
+    <div class="card-title">Calculadora Expectancy</div>
+    <div class="card-desc">Proyección a N trades. Tabla de drawdown esperado. La matemática antes de la emoción.</div>
+    <a href="expectancy_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">07</div>
+    <div class="card-title">Simulador de Drawdown</div>
+    <div class="card-desc">Curva de capital visual con dos modos de simulación. Prepara la psicología antes de la pérdida real.</div>
+    <a href="simulador_drawdown.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+  <div class="card">
+    <div class="card-num">08</div>
+    <div class="card-title">Timer Sesión BMO</div>
+    <div class="card-desc">12 zonas horarias sincronizadas. Alerta precisa en la Ventana PULSO 9:38–9:45 AM EST.</div>
+    <a href="timer_bmo_pulso.html" target="_blank" class="btn">ABRIR HERRAMIENTA</a>
+  </div>
+
+</div>
+
+<div class="footer">
+  <a href="https://joseferrermd.com">joseferrermd.com</a>
+</div>
+
+</body>
+</html>
