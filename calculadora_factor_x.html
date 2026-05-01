@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora del Factor X — DOMINIO DEL MOMENTUM</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8c97a;
+  --dark: #0a0a0a;
+  --dark2: #111111;
+  --dark3: #1a1a1a;
+  --dark4: #222222;
+  --border: rgba(201,168,76,0.2);
+  --text: #e8e0d0;
+  --text2: #8a8070;
+  --success: #4ade80;
+  --danger: #f87171;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--dark);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0;
+}
+
+.header {
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1208 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+
+.header-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.header-sub {
+  font-size: 12px;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+}
+
+.gold-line {
+  width: 48px;
+  height: 1px;
+  background: var(--gold);
+  margin: 12px auto 0;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  background: var(--dark2);
+  overflow-x: auto;
+}
+
+.tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+  white-space: nowrap;
+}
+
+.tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.panel { display: none; padding: 20px; }
+.panel.active { display: block; }
+
+/* INPUTS */
+.input-block { margin-bottom: 18px; }
+
+.input-label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-hint {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+input[type=number], input[type=text] {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+
+input:focus { outline: none; border-color: var(--gold); }
+
+.btn-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.opt-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  font-size: 11px;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  transition: all .15s;
+}
+
+.opt-btn.sel {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  color: var(--gold);
+}
+
+.opt-btn.sel-pos { border-color: var(--success); background: rgba(74,222,128,0.1); color: var(--success); }
+.opt-btn.sel-neg { border-color: var(--danger); background: rgba(248,113,113,0.1); color: var(--danger); }
+.opt-btn.sel-neu { border-color: var(--warning); background: rgba(251,191,36,0.1); color: var(--warning); }
+
+/* BOTÓN CALCULAR */
+.calc-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #c9a84c, #e8c97a);
+  border: none;
+  border-radius: 8px;
+  color: #0a0a0a;
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  margin: 6px 0;
+  transition: opacity .2s;
+}
+
+.calc-btn:hover { opacity: 0.9; }
+
+.reset-btn {
+  width: 100%;
+  padding: 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text2);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* RESULTADO */
+.result-hero {
+  text-align: center;
+  padding: 24px 16px;
+  background: linear-gradient(135deg, #111108, #1a1408);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.result-eyebrow {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+
+.result-ticker {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.result-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--gold-light);
+  line-height: 1;
+  margin: 8px 0;
+}
+
+.result-unit {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+
+.result-badge {
+  display: inline-block;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.bk {
+  background: var(--dark3);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.bk-label {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.bk-value {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* INTERPRETACIONES */
+.interp {
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-left: 3px solid;
+}
+
+.interp-danger { background: rgba(248,113,113,0.08); border-color: var(--danger); }
+.interp-warning { background: rgba(251,191,36,0.08); border-color: var(--warning); }
+.interp-success { background: rgba(74,222,128,0.08); border-color: var(--success); }
+.interp-info { background: rgba(96,165,250,0.08); border-color: var(--info); }
+
+.interp-title {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.interp-text {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.disclaimer {
+  background: var(--dark3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-top: 4px;
+}
+
+/* CASOS */
+.case-item {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 14px 0;
+}
+
+.case-item:last-child { border-bottom: none; }
+
+.case-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.case-ticker {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  color: var(--gold);
+}
+
+.case-move {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.case-desc {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.case-tag {
+  display: inline-block;
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* GOLD BOX */
+.gold-box {
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.04));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+
+.gold-box-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.gold-box-text {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.7;
+}
+
+.gold-box-text strong { color: var(--text); font-weight: 500; }
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Dominio del Momentum · José Ferrer MD</div>
+  <div class="header-title">Calculadora del Factor X</div>
+  <div class="header-sub">Estima la expectativa real silenciosa del mercado antes del reporte</div>
+  <div class="gold-line"></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('calc',this)">Calcular</button>
+  <button class="tab" onclick="showTab('resultado',this)">Resultado</button>
+  <button class="tab" onclick="showTab('casos',this)">Casos reales</button>
+  <button class="tab" onclick="showTab('regla',this)">2 Fases</button>
+</div>
+
+<!-- CALCULADORA -->
+<div id="calc" class="panel active">
+
+  <div class="input-block">
+    <div class="input-label">Ticker <span class="input-hint">Opcional</span></div>
+    <input type="text" id="ticker" placeholder="Ej: AMZN">
+  </div>
+
+  <div class="input-block">
+    <div class="input-label">EPS consenso oficial <span class="input-hint">Publicado en plataformas</span></div>
+    <input type="number" id="eps" placeholder="Ej: 3.50" step="0.01">
+  </div>
+
+  <div class="input-block">
+    <div class="input-label">Historial de sorpresas <span class="input-hint">Promedio últimos 4 trimestres</span></div>
+    <div class="btn-row" id="row-surprise">
+      <button class="opt-btn" onclick="pick('surprise',0,this,'sel')">0% sin historial</button>
+      <button class="opt-btn" onclick="pick('surprise',5,this,'sel-pos')">+5%</button>
+      <button class="opt-btn" onclick="pick('surprise',10,this,'sel-pos')">+10%</button>
+      <button class="opt-btn" onclick="pick('surprise',15,this,'sel-pos')">+15%</button>
+      <button class="opt-btn" onclick="pick('surprise',20,this,'sel-pos')">+20%</button>
+      <button class="opt-btn" onclick="pick('surprise',30,this,'sel-pos')">+30%</button>
+    </div>
+  </div>
+
+  <div class="input-block">
+    <div class="input-label">Precio 3 días previos <span class="input-hint">Movimiento antes del earnings</span></div>
+    <div class="btn-row" id="row-premove">
+      <button class="opt-btn" onclick="pick('premove',-10,this,'sel-neg')">-10% o más</button>
+      <button class="opt-btn" onclick="pick('premove',-5,this,'sel-neg')">-5%</button>
+      <button class="opt-btn" onclick="pick('premove',0,this,'sel-neu')">Plano</button>
+      <button class="opt-btn" onclick="pick('premove',5,this,'sel-pos')">+5%</button>
+      <button class="opt-btn" onclick="pick('premove',8,this,'sel-pos')">+8%</button>
+      <button class="opt-btn" onclick="pick('premove',15,this,'sel-pos')">+15%+</button>
+    </div>
+  </div>
+
+  <div class="input-block">
+    <div class="input-label">Skew de opciones <span class="input-hint">Volumen inusual en cadena</span></div>
+    <div class="btn-row" id="row-skew">
+      <button class="opt-btn" onclick="pick('skew',-1,this,'sel-neg')">Puts dominan</button>
+      <button class="opt-btn" onclick="pick('skew',0,this,'sel-neu')">Neutro</button>
+      <button class="opt-btn" onclick="pick('skew',1,this,'sel-pos')">Calls dominan</button>
+    </div>
+  </div>
+
+  <div class="input-block">
+    <div class="input-label">Posición del precio <span class="input-hint">Contexto técnico actual</span></div>
+    <div class="btn-row" id="row-pos">
+      <button class="opt-btn" onclick="pick('pos','minimos',this,'sel-pos')">Mínimos 52s</button>
+      <button class="opt-btn" onclick="pick('pos','neutral',this,'sel-neu')">Neutral</button>
+      <button class="opt-btn" onclick="pick('pos','maximos',this,'sel-neg')">Máximos / extendida</button>
+    </div>
+  </div>
+
+  <div class="input-block">
+    <div class="input-label">Whisper Number <span class="input-hint">earningswhispers.com — si disponible</span></div>
+    <input type="number" id="whisper" placeholder="Dejar vacío si no disponible" step="0.01">
+  </div>
+
+  <button class="calc-btn" onclick="calcFX()">Calcular Factor X</button>
+  <button class="reset-btn" onclick="resetAll()">Reiniciar</button>
+
+  <div class="gold-box" style="margin-top:16px">
+    <div class="gold-box-title">¿Qué es el Factor X?</div>
+    <p class="gold-box-text">El Factor X es la expectativa real silenciosa del mercado. No la que publican los analistas. La que el dinero inteligente lleva semanas descontando. <strong>No encontrarás este concepto en ninguna biblioteca financiera.</strong> Es una propuesta original de este libro, resultado de años de observación sistemática de patrones de reacción post-earnings.</p>
+  </div>
+</div>
+
+<!-- RESULTADO -->
+<div id="resultado" class="panel">
+  <div class="result-hero">
+    <div class="result-eyebrow">Factor X estimado</div>
+    <div class="result-ticker" id="r-ticker">—</div>
+    <div class="result-num" id="r-num">—</div>
+    <div class="result-unit">EPS implícito que el mercado realmente espera</div>
+    <span class="result-badge" id="r-badge">—</span>
+  </div>
+
+  <div class="breakdown">
+    <div class="bk"><div class="bk-label">Consenso oficial</div><div class="bk-value" id="r-cons">—</div></div>
+    <div class="bk"><div class="bk-label">Ajuste historial</div><div class="bk-value" id="r-hist">—</div></div>
+    <div class="bk"><div class="bk-label">Ajuste precio previo</div><div class="bk-value" id="r-pre">—</div></div>
+    <div class="bk"><div class="bk-label">Ajuste skew + posición</div><div class="bk-value" id="r-skew">—</div></div>
+  </div>
+
+  <div id="r-interp"></div>
+
+  <div class="disclaimer">
+    <strong style="color:var(--text)">Recuerda:</strong> El Factor X es una estimación, no una predicción exacta. Su valor está en calibrar la brecha entre lo que el mercado espera en silencio y lo que el reporte entrega. Siempre combinar con el Score PULSO completo y respetar el protocolo de dos fases.
+  </div>
+</div>
+
+<!-- CASOS REALES -->
+<div id="casos" class="panel">
+
+  <div class="case-item">
+    <div class="case-top">
+      <span class="case-ticker">STX</span>
+      <span class="case-move" style="color:var(--success)">+11%</span>
+    </div>
+    <div class="case-desc">Consenso $3.50 · Factor X ~$3.85 · Real $4.10 · Beat EPS +17%<br>Double beat completo. Comp. Killer data center AI positivo. 7 fuerzas alineadas.</div>
+    <span class="case-tag" style="background:rgba(74,222,128,0.1);color:var(--success)">Reporte superó Factor X → +11%</span>
+  </div>
+
+  <div class="case-item">
+    <div class="case-top">
+      <span class="case-ticker">HOOD</span>
+      <span class="case-move" style="color:var(--danger)">-10%</span>
+    </div>
+    <div class="case-desc">EPS $0.38 vs $0.385 · Revenue $1.07B vs $1.14B · Crypto revenue -47%<br>Double miss real. Datos incorrectos circularon en X antes del reporte oficial.</div>
+    <span class="case-tag" style="background:rgba(248,113,113,0.1);color:var(--danger)">Double miss + Comp. Killer fallido → -10%</span>
+  </div>
+
+  <div class="case-item">
+    <div class="case-top">
+      <span class="case-ticker">SPOT</span>
+      <span class="case-move" style="color:var(--danger)">-17%</span>
+    </div>
+    <div class="case-desc">Beat EPS +8.6% · Revenue miss mínimo · Guidance Q2: €4.80B vs €5.65B est.<br>Variable Dominante: guidance destruyó los buenos números pasados. Ad revenue -25% secuencial.</div>
+    <span class="case-tag" style="background:rgba(248,113,113,0.1);color:var(--danger)">Beat pero guidance < Factor X futuro → -17%</span>
+  </div>
+
+  <div class="case-item">
+    <div class="case-top">
+      <span class="case-ticker">JBLU</span>
+      <span class="case-move" style="color:var(--warning)">+3% mecánico</span>
+    </div>
+    <div class="case-desc">Miss beneficios -19% · Ingresos en línea · Factor X negativo = catástrofe total<br>El miss fue menos malo que el Factor X negativo. Shorts cerraron. Volumen decreciente = trampa.</div>
+    <span class="case-tag" style="background:rgba(251,191,36,0.1);color:var(--warning)">Reporte > Factor X negativo → Rebote mecánico</span>
+  </div>
+
+  <div class="case-item">
+    <div class="case-top">
+      <span class="case-ticker">AMZN</span>
+      <span class="case-move" style="color:var(--info)">-5% F1 → +3% F2</span>
+    </div>
+    <div class="case-desc">Beat EPS +70.2% · $181.5B vs $177.3B · CEO elevó narrativa AI cloud<br>Las dos fases contradictorias. Fase 1 bajista. Fase 2 alcista post conference call.</div>
+    <span class="case-tag" style="background:rgba(96,165,250,0.1);color:var(--info)">Dos fases opuestas → Nunca dejar posición abierta</span>
+  </div>
+
+  <div class="case-item">
+    <div class="case-top">
+      <span class="case-ticker">PayPal 2022</span>
+      <span class="case-move" style="color:var(--danger)">-20%</span>
+    </div>
+    <div class="case-desc">Cumplió consenso exactamente · Guidance usuarios activos cortado a la mitad<br>El origen del método. -$10,000 en minutos. El mercado castigó el futuro, no el pasado.</div>
+    <span class="case-tag" style="background:rgba(248,113,113,0.1);color:var(--danger)">Cumplió consenso pero no Factor X → -20%</span>
+  </div>
+
+</div>
+
+<!-- DOS FASES -->
+<div id="regla" class="panel">
+
+  <div style="background:var(--dark3);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+    <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--gold);margin-bottom:8px">Las Dos Fases del Earnings</div>
+    <p style="font-size:11px;color:var(--text2);line-height:1.7">Todo earnings tiene dos conversaciones. Los números del reporte son la primera. El conference call del CEO es la segunda. Pueden ser contradictorias. <strong style="color:var(--text)">Nunca dejes una posición de Fase 1 abierta durante el conference call.</strong></p>
+  </div>
+
+  <div class="interp interp-warning" style="margin-bottom:10px">
+    <div class="interp-title" style="color:var(--warning)">Fase 1 — La reacción visceral (T+0 a T+30 min)</div>
+    <div class="interp-text">Algoritmos y alta frecuencia. Frecuentemente excesiva. Si el Score PULSO está alineado, es tu ventana de entrada. <strong style="color:var(--text)">Regla absoluta: cierra antes del conference call.</strong> No importa si estás ganando.</div>
+  </div>
+
+  <div class="interp interp-info" style="margin-bottom:10px">
+    <div class="interp-title" style="color:var(--info)">Fase 2 — La narrativa del futuro (T+45 a T+90 min)</div>
+    <div class="interp-text">El CEO habla. El mercado reprecia. Puede ir en dirección opuesta a Fase 1 sin contradicción. Es un trade independiente con sus propias 5 preguntas y Score PULSO.</div>
+  </div>
+
+  <div class="interp interp-danger" style="margin-bottom:10px">
+    <div class="interp-title" style="color:var(--danger)">Efecto de arrastre sectorial</div>
+    <div class="interp-text">Cuando el CEO de un líder sectorial cambia la narrativa, los fondos institucionales ajustan exposición al sector completo simultáneamente. Amazon el 29/04/2026: CEO elevó narrativa AI cloud → Amazon, Microsoft y Meta subieron en simpatía en minutos.</div>
+  </div>
+
+  <div class="gold-box">
+    <div class="gold-box-title">La lección de $272</div>
+    <p class="gold-box-text">El 29 de abril de 2026 entré short en Amazon en Fase 1. El trade iba ganando $100. Me fui a ver televisión. El CEO habló en el conference call y elevó la narrativa. Cuando volví, perdía $172. <strong>Diferencia total: $272. Costo de no respetar el protocolo de dos fases.</strong> Se opera la Fase 1 o la Fase 2. Nunca las dos en la misma posición.</p>
+  </div>
+
+  <div style="background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:11px;color:var(--text2);line-height:1.7">
+    <strong style="color:var(--gold)">Los números dicen lo que fue.</strong> El precio dice lo que el mercado siente. <strong style="color:var(--gold)">El CEO dice lo que será.</strong> Cuando los tres hablan idiomas diferentes, el CEO siempre gana.
+  </div>
+
+</div>
+
+<script>
+const state = { surprise: null, premove: null, skew: null, pos: null };
+
+function pick(key, val, btn, cls) {
+  state[key] = val;
+  const row = btn.parentElement;
+  row.querySelectorAll('.opt-btn').forEach(b => {
+    b.className = 'opt-btn';
+  });
+  btn.classList.add(cls);
+}
+
+function calcFX() {
+  const eps = parseFloat(document.getElementById('eps').value);
+  if (isNaN(eps)) { alert('Ingresa el EPS consenso oficial'); return; }
+
+  const ticker = document.getElementById('ticker').value || '—';
+  const whisper = parseFloat(document.getElementById('whisper').value);
+  const surprise = state.surprise || 0;
+  const premove = state.premove !== null ? state.premove : 0;
+  const skew = state.skew !== null ? state.skew : 0;
+  const pos = state.pos || 'neutral';
+
+  // Base ajustada por historial
+  const base = eps * (1 + surprise / 100);
+
+  // Ajuste por precio previo
+  let preAdj = 0;
+  if (premove >= 15) preAdj = base * 0.12;
+  else if (premove >= 8) preAdj = base * 0.08;
+  else if (premove >= 5) preAdj = base * 0.05;
+  else if (premove <= -10) preAdj = base * -0.05;
+  else if (premove <= -5) preAdj = base * -0.03;
+
+  // Ajuste skew y posición
+  let skewAdj = 0;
+  if (skew === 1) skewAdj += base * 0.03;
+  if (skew === -1) skewAdj -= base * 0.03;
+  if (pos === 'maximos') skewAdj += base * 0.05;
+  if (pos === 'minimos') skewAdj -= base * 0.03;
+
+  let fx = base + preAdj + skewAdj;
+  if (!isNaN(whisper) && whisper > 0) fx = fx * 0.6 + whisper * 0.4;
+  fx = Math.round(fx * 100) / 100;
+
+  const diff = ((fx - eps) / eps * 100).toFixed(1);
+
+  document.getElementById('r-ticker').textContent = ticker;
+  document.getElementById('r-num').textContent = '$' + fx.toFixed(2);
+  document.getElementById('r-cons').textContent = '$' + eps.toFixed(2);
+  document.getElementById('r-hist').textContent = surprise > 0 ? '+' + surprise + '% → $' + base.toFixed(2) : 'Sin ajuste';
+  document.getElementById('r-pre').textContent = (preAdj >= 0 ? '+' : '') + '$' + preAdj.toFixed(2);
+  document.getElementById('r-skew').textContent = (skewAdj >= 0 ? '+' : '') + '$' + skewAdj.toFixed(2);
+
+  const badge = document.getElementById('r-badge');
+  const pd = parseFloat(diff);
+  if (pd > 15) {
+    badge.textContent = 'Factor X muy superior (+' + diff + '%) — riesgo bajista alto';
+    badge.style.cssText = 'background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3)';
+  } else if (pd > 8) {
+    badge.textContent = 'Factor X significativamente superior (+' + diff + '%)';
+    badge.style.cssText = 'background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3)';
+  } else if (pd > 3) {
+    badge.textContent = 'Factor X moderadamente superior (+' + diff + '%)';
+    badge.style.cssText = 'background:rgba(96,165,250,0.15);color:#60a5fa;border:1px solid rgba(96,165,250,0.3)';
+  } else {
+    badge.textContent = 'Factor X cercano al consenso (' + diff + '%)';
+    badge.style.cssText = 'background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3)';
+  }
+
+  let html = '';
+  if (pd > 10 && pos === 'maximos') {
+    html += `<div class="interp interp-danger"><div class="interp-title" style="color:var(--danger)">⚠️ Zona de máximo riesgo</div><div class="interp-text">Factor X muy por encima del consenso con acción en máximos. El reporte tiene que superar $${fx.toFixed(2)} Y el CEO debe elevar el guidance. Si solo cumple el consenso oficial, espera caída significativa.</div></div>`;
+  }
+  if (pos === 'minimos') {
+    html += `<div class="interp interp-info"><div class="interp-title" style="color:var(--info)">Protocolo de mínimos activo</div><div class="interp-text">Factor X implícito más bajo. Un beat del consenso puede activar cierre de shorts. Pero recuerda: necesitas cambio de narrativa, no solo buenos números. Score PULSO mínimo: 11.</div></div>`;
+  }
+  if (skew === 1) {
+    html += `<div class="interp interp-success"><div class="interp-title" style="color:var(--success)">Skew alcista — señal de demanda institucional</div><div class="interp-text">El volumen inusual en calls sugiere posicionamiento institucional alcista. Eleva el Factor X y el riesgo bajista si el reporte solo cumple sin superar.</div></div>`;
+  }
+  if (premove >= 8) {
+    html += `<div class="interp interp-warning"><div class="interp-title" style="color:var(--warning)">Precio extendido — Factor X parcialmente descontado</div><div class="interp-text">La subida previa al earnings incorpora expectativas elevadas. Si el reporte no supera el Factor X estimado, espera reversión aunque sea beat oficial del consenso.</div></div>`;
+  }
+  if (!html) {
+    html = `<div class="interp interp-info"><div class="interp-title" style="color:var(--info)">Factor X calculado</div><div class="interp-text">Compara el Factor X estimado ($${fx.toFixed(2)}) con el resultado real cuando salga el reporte. La brecha entre ambos determina la magnitud y dirección del movimiento.</div></div>`;
+  }
+
+  document.getElementById('r-interp').innerHTML = html;
+  showTab('resultado', document.querySelectorAll('.tab')[1]);
+}
+
+function resetAll() {
+  Object.keys(state).forEach(k => state[k] = null);
+  document.getElementById('eps').value = '';
+  document.getElementById('whisper').value = '';
+  document.getElementById('ticker').value = '';
+  document.querySelectorAll('.opt-btn').forEach(b => b.className = 'opt-btn');
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>
