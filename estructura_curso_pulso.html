@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Método PULSO — El Curso · José Ferrer, MD</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Text:ital,wght@0,400;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:#000000;font-family:'Crimson Text',serif;color:#c8a96e;line-height:1.7;overflow-x:hidden;}
+
+/* TYPOGRAPHY HIERARCHY */
+.t1{font-family:'Cinzel',serif;font-weight:900;color:#e8c988;} /* Títulos principales - dorado brillante */
+.t2{font-family:'Cinzel',serif;font-weight:700;color:#c8a96e;} /* Títulos secundarios - dorado medio */
+.t3{font-family:'Cinzel',serif;font-weight:400;color:#a88848;} /* Subtítulos - dorado oscuro */
+.t4{font-family:'Crimson Text',serif;color:#906828;} /* Descripciones - dorado suave */
+.mono{font-family:'Space Mono',monospace;color:#a88848;} /* Mono - dorado medio */
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 40px;position:relative;background:#000000;}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:6px;color:#a88848;text-transform:uppercase;margin-bottom:32px;opacity:0;animation:fadeUp .8s .2s forwards;}
+.hero-title{font-family:'Cinzel',serif;font-weight:900;font-size:clamp(52px,8vw,100px);letter-spacing:4px;line-height:.9;color:#e8c988;margin-bottom:16px;opacity:0;animation:fadeUp .8s .4s forwards;}
+.hero-subtitle{font-family:'Cinzel',serif;font-size:clamp(14px,2vw,20px);letter-spacing:8px;color:#806828;margin-bottom:40px;opacity:0;animation:fadeUp .8s .5s forwards;}
+.hero-rule{width:300px;height:1px;background:linear-gradient(to right,transparent,#c8a96e,transparent);margin:0 auto 40px;opacity:0;animation:fadeUp .8s .6s forwards;}
+.hero-tagline{font-family:'Crimson Text',serif;font-size:clamp(18px,2.5vw,26px);font-style:italic;color:#906828;max-width:600px;margin:0 auto 60px;opacity:0;animation:fadeUp .8s .7s forwards;}
+.hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp .8s 1s forwards;}
+.hero-stat{text-align:center;}
+.hero-stat-num{font-family:'Cinzel',serif;font-size:36px;font-weight:700;color:#e8c988;line-height:1;}
+.hero-stat-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#806828;margin-top:4px;}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:#604818;display:flex;flex-direction:column;align-items:center;gap:8px;animation:bounce 2s infinite;}
+.scroll-hint::after{content:'';width:1px;height:40px;background:linear-gradient(to bottom,#c8a96e,transparent);}
+
+/* ECG */
+.ecg-hero{width:100%;max-width:700px;margin:0 auto 60px;opacity:0;animation:fadeUp .8s .8s forwards;}
+.ecg-path{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawECG 3s 1.2s ease forwards;}
+@keyframes drawECG{to{stroke-dashoffset:0;}}
+
+/* SECTIONS */
+.section{max-width:1100px;margin:0 auto;padding:80px 40px;background:#000000;}
+.section-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:6px;color:#a88848;text-transform:uppercase;margin-bottom:16px;}
+.section-title{font-family:'Cinzel',serif;font-size:clamp(28px,4vw,48px);font-weight:700;color:#e8c988;margin-bottom:24px;line-height:1.1;}
+.section-rule{width:200px;height:1px;background:linear-gradient(to right,#c8a96e,transparent);margin-bottom:40px;}
+.section-divider{width:100%;height:1px;background:linear-gradient(to right,transparent,#3a2808,transparent);}
+
+/* TRANSFORMATION */
+.transform-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-top:48px;}
+.transform-card{background:#0a0804;border:1px solid #3a2808;border-radius:8px;padding:32px;text-align:center;position:relative;overflow:hidden;}
+.transform-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,#c8a96e,transparent);}
+.transform-num{font-family:'Cinzel',serif;font-size:48px;font-weight:900;color:#1a1004;line-height:1;margin-bottom:12px;}
+.transform-title{font-family:'Cinzel',serif;font-size:16px;letter-spacing:2px;color:#e8c988;margin-bottom:12px;}
+.transform-desc{font-size:16px;color:#906828;font-style:italic;line-height:1.6;}
+
+/* MODULES */
+.modules-container{margin-top:48px;}
+.module{display:grid;grid-template-columns:80px 1fr;gap:0;margin-bottom:2px;}
+.module-number{background:#0a0804;border:1px solid #3a2808;border-right:none;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:24px;font-weight:700;color:#e8c988;padding:32px 20px;border-radius:8px 0 0 8px;}
+.module-content{background:#060402;border:1px solid #3a2808;border-left:none;padding:28px 32px;border-radius:0 8px 8px 0;}
+.module-tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:#c8a96e;text-transform:uppercase;margin-bottom:6px;}
+.module-title{font-family:'Cinzel',serif;font-size:20px;font-weight:700;color:#e8c988;margin-bottom:10px;}
+.module-subtitle{font-size:15px;font-style:italic;color:#906828;margin-bottom:14px;}
+.module-topics{display:flex;flex-wrap:wrap;gap:8px;}
+.topic-pill{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 12px;border:1px solid #3a2808;border-radius:20px;color:#a88848;background:#0a0804;}
+.module.free .module-number{color:#c8e888;border-color:rgba(150,200,100,0.3);}
+.module.free .module-tag{color:#c8e888;}
+.free-badge{display:inline-block;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;padding:2px 8px;background:rgba(150,200,100,0.1);color:#c8e888;border:1px solid rgba(150,200,100,0.3);border-radius:10px;margin-left:8px;vertical-align:middle;}
+
+/* FORMAT */
+.format-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:48px;}
+.format-card{background:#0a0804;border:1px solid #3a2808;border-radius:8px;padding:32px;}
+.format-icon{font-size:32px;margin-bottom:16px;}
+.format-title{font-family:'Cinzel',serif;font-size:18px;letter-spacing:2px;color:#e8c988;margin-bottom:12px;}
+.format-desc{font-size:16px;color:#906828;line-height:1.7;}
+
+/* PRICING */
+.price-card{background:#0a0804;border:2px solid #c8a96e;border-radius:8px;padding:40px;text-align:center;max-width:420px;margin:48px auto 0;}
+.price-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#a88848;margin-bottom:12px;}
+.price-amount{font-family:'Cinzel',serif;font-size:64px;font-weight:700;color:#e8c988;line-height:1;margin-bottom:4px;}
+.price-period{font-family:'Space Mono',monospace;font-size:11px;color:#806828;margin-bottom:24px;}
+.price-features{list-style:none;margin-bottom:0;text-align:left;}
+.price-features li{font-size:16px;color:#a88848;padding:8px 0;border-bottom:1px solid #1a1004;display:flex;align-items:center;gap:10px;}
+.price-features li:last-child{border-bottom:none;}
+.price-features li::before{content:'→';color:#c8a96e;font-family:'Space Mono',monospace;font-size:11px;}
+
+/* TIMELINE */
+.timeline{margin-top:48px;position:relative;}
+.timeline::before{content:'';position:absolute;left:24px;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,#c8a96e,#1a1004);}
+.timeline-item{display:grid;grid-template-columns:60px 1fr;gap:24px;margin-bottom:32px;}
+.timeline-dot{width:48px;height:48px;border-radius:50%;background:#000000;border:1px solid #3a2808;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:14px;font-weight:700;color:#e8c988;position:relative;z-index:2;}
+.timeline-phase{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:#a88848;margin-bottom:4px;}
+.timeline-title{font-family:'Cinzel',serif;font-size:18px;color:#e8c988;margin-bottom:6px;}
+.timeline-desc{font-size:15px;color:#906828;font-style:italic;}
+
+/* FOOTER */
+.footer{text-align:center;padding:60px 40px;border-top:1px solid #1a1004;background:#000000;}
+.footer-brand{font-family:'Cinzel',serif;font-size:20px;font-weight:700;letter-spacing:4px;color:#e8c988;margin-bottom:8px;}
+.footer-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#806828;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:768px){
+  .hero{padding:60px 20px;}
+  .transform-grid{grid-template-columns:1fr;}
+  .format-grid{grid-template-columns:1fr;}
+  .module{grid-template-columns:60px 1fr;}
+  .section{padding:60px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div style="position:relative;z-index:2;max-width:900px;width:100%;">
+    <div class="hero-eyebrow">José Ferrer, MD · @jferrermd · joseferrermd.com</div>
+    <div class="hero-title">MÉTODO<br>PULSO</div>
+    <div class="hero-subtitle">· EL CURSO ·</div>
+    <div class="hero-rule"></div>
+    <div class="hero-tagline">El protocolo clínico para operar Earnings con precisión quirúrgica.<br>Una transformación completa — no un tutorial.</div>
+
+    <svg class="ecg-hero" viewBox="0 0 700 60" fill="none">
+      <polyline class="ecg-path" points="0,30 40,30 48,18 56,30 64,30 70,6 76,56 82,22 110,22 116,12 122,22 128,22 132,4 138,58 144,20 170,20 190,20 210,20"
+        stroke="#c8a96e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+      <rect x="222" y="10" width="14" height="28" fill="#c8a96e" rx="2" opacity="0.8"/>
+      <line x1="229" y1="4" x2="229" y2="10" stroke="#c8a96e" stroke-width="2" opacity="0.7"/>
+      <line x1="229" y1="38" x2="229" y2="48" stroke="#c8a96e" stroke-width="2" opacity="0.7"/>
+      <rect x="242" y="8" width="14" height="22" fill="#c8a96e" rx="2" opacity="0.75"/>
+      <line x1="249" y1="2" x2="249" y2="8" stroke="#c8a96e" stroke-width="2" opacity="0.65"/>
+      <rect x="262" y="18" width="14" height="12" fill="none" stroke="#c8a96e" stroke-width="1.5" rx="2" opacity="0.55"/>
+      <line x1="269" y1="10" x2="269" y2="18" stroke="#c8a96e" stroke-width="2" opacity="0.5"/>
+      <line x1="269" y1="30" x2="269" y2="42" stroke="#c8a96e" stroke-width="2" opacity="0.5"/>
+      <rect x="282" y="6" width="14" height="32" fill="#c8a96e" rx="2" opacity="0.82"/>
+      <line x1="289" y1="1" x2="289" y2="6" stroke="#c8a96e" stroke-width="2" opacity="0.7"/>
+      <line x1="289" y1="38" x2="289" y2="50" stroke="#c8a96e" stroke-width="2" opacity="0.7"/>
+      <polyline class="ecg-path" points="302,20 330,20 336,10 342,20 348,20 352,2 356,58 360,18 385,18 405,18 450,18 500,18 560,18 620,18 700,18"
+        stroke="#c8a96e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity="0.4"/>
+    </svg>
+
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-num">2,127</div><div class="hero-stat-label">Operaciones documentadas</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">9</div><div class="hero-stat-label">Clases en vivo · 90 min</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">20+</div><div class="hero-stat-label">Años bajo presión extrema</div></div>
+      <div class="hero-stat"><div class="hero-stat-num">5</div><div class="hero-stat-label">Filtros del Método PULSO</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint">EXPLORAR</div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- TRANSFORMACIÓN -->
+<div class="section reveal">
+  <div class="section-label">La promesa</div>
+  <div class="section-title">Tres transformaciones.<br>Un solo curso.</div>
+  <div class="section-rule"></div>
+  <div class="transform-grid">
+    <div class="transform-card">
+      <div class="transform-num">01</div>
+      <div class="transform-title">ENTENDER</div>
+      <div class="transform-desc">Dominas el Método PULSO completo — sus 5 filtros, su lógica y su aplicación en tiempo real. No como concepto. Como protocolo ejecutable.</div>
+    </div>
+    <div class="transform-card">
+      <div class="transform-num">02</div>
+      <div class="transform-title">EJECUTAR</div>
+      <div class="transform-desc">Completas tu primer trade de earnings documentado con el protocolo. No en papel. En una cuenta real, con dinero real, con estructura real.</div>
+    </div>
+    <div class="transform-card">
+      <div class="transform-num">03</div>
+      <div class="transform-title">SISTEMATIZAR</div>
+      <div class="transform-desc">Tienes tu propio sistema de trading documentado y probado — con track record, bitácora y protocolo de gestión de riesgo personalizado.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- MÓDULOS -->
+<div class="section reveal">
+  <div class="section-label">Arquitectura del curso</div>
+  <div class="section-title">9 semanas.<br>Una transformación completa.</div>
+  <div class="section-rule"></div>
+  <div class="modules-container">
+
+    <div class="module free">
+      <div class="module-number">0</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO GRATUITO · Acceso inmediato <span class="free-badge">FREE</span></div>
+        <div class="module-title">Bienvenida y diagnóstico inicial</div>
+        <div class="module-subtitle">Antes de aprender el método — entender dónde estás y por qué estás ahí.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Diagnóstico del trader</span>
+          <span class="topic-pill">Los 3 errores universales</span>
+          <span class="topic-pill">Mentalidad base</span>
+          <span class="topic-pill">Cómo usar el curso</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">1</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 1 · Fundamentos</div>
+        <div class="module-title">El mercado como sistema biológico</div>
+        <div class="module-subtitle">La Medicina de las Decisiones Financieras — por qué el mercado late igual que el corazón humano.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Fisiología del comportamiento colectivo</span>
+          <span class="topic-pill">Secuestro amigdalino en trading</span>
+          <span class="topic-pill">Anatomía de un earnings</span>
+          <span class="topic-pill">Por qué fallan los análisis perfectos</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">2</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 2 · Fundamentos de mercado</div>
+        <div class="module-title">Lo que nadie te explicó — porque nadie lo sabía explicar</div>
+        <div class="module-subtitle">Análisis técnico, plataformas y estructura de mercado. Todo con analogías médicas y ejemplos que nunca olvidarás.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Cómo funciona el mercado — La fiesta de Wall Street</span>
+          <span class="topic-pill">Teoría de Dow — El electrocardiograma del precio</span>
+          <span class="topic-pill">Ondas de Elliott — El ritmo cardíaco del mercado</span>
+          <span class="topic-pill">Soportes y resistencias — Las arterias del precio</span>
+          <span class="topic-pill">Medias móviles — El pulso del mercado</span>
+          <span class="topic-pill">Patrones de velas más comunes</span>
+          <span class="topic-pill">TradingView paso a paso</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">3</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 3 · Estructura técnica</div>
+        <div class="module-title">Los indicadores que realmente importan</div>
+        <div class="module-subtitle">No todos los indicadores son iguales. Aprende a leer los que el mercado profesional usa — y a ignorar el ruido.</div>
+        <div class="module-topics">
+          <span class="topic-pill">VWAP y su lectura institucional</span>
+          <span class="topic-pill">PMH y PML — los niveles que no mienten</span>
+          <span class="topic-pill">Volumen como intención</span>
+          <span class="topic-pill">Level II en tiempo real</span>
+          <span class="topic-pill">EMA 9 como guía de momentum</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">4</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 4 · El corazón del método</div>
+        <div class="module-title">El Método PULSO — Los 5 filtros</div>
+        <div class="module-subtitle">El protocolo completo. Cada filtro, su lógica, su aplicación y los errores más comunes al ejecutarlo.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Filtro P — Precio y estructura</span>
+          <span class="topic-pill">Filtro U — Evento inusual</span>
+          <span class="topic-pill">Filtro L — Liquidez</span>
+          <span class="topic-pill">Filtro S — Sesgo direccional</span>
+          <span class="topic-pill">Filtro O — Oportunidad real</span>
+          <span class="topic-pill">Sistema de Ranking 0–15</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">5</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 5 · Protocolo BMO</div>
+        <div class="module-title">Before Market Open — El protocolo de apertura</div>
+        <div class="module-subtitle">Los 30 minutos más importantes del día. Cómo preparar cada trade antes de que abra el mercado.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Ventana PULSO 9:38–9:45 AM</span>
+          <span class="topic-pill">Los 4 escenarios BMO</span>
+          <span class="topic-pill">Premarket con PMH y PML</span>
+          <span class="topic-pill">Setup completo de trabajo</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">6</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 6 · Protocolo AMC</div>
+        <div class="module-title">After Market Close — El protocolo de cierre</div>
+        <div class="module-subtitle">Lo que pasa después del cierre define el trade de mañana. El protocolo AMC y sus 4 escenarios.</div>
+        <div class="module-topics">
+          <span class="topic-pill">AH High y AH Low</span>
+          <span class="topic-pill">Los 4 escenarios AMC</span>
+          <span class="topic-pill">Cómo actuar en cada uno</span>
+          <span class="topic-pill">Casos reales analizados</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">7</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 7 · Gestión de riesgo</div>
+        <div class="module-title">La matemática que salva el capital</div>
+        <div class="module-subtitle">Sin gestión de riesgo no hay sistema. Aquí se construye el framework que protege el capital cuando el mercado falla.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Gestión por tramos — 1.5R y 2R+</span>
+          <span class="topic-pill">Calculadora de posición</span>
+          <span class="topic-pill">Expectancy y probabilidad</span>
+          <span class="topic-pill">Simulador de drawdown</span>
+          <span class="topic-pill">Las 15 reglas inquebrantables</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">8</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 8 · Psicología avanzada</div>
+        <div class="module-title">La mente del operador profesional</div>
+        <div class="module-subtitle">El módulo que nadie más puede dar. Neurociencia aplicada al trading — desde la UCI hasta la pantalla.</div>
+        <div class="module-topics">
+          <span class="topic-pill">La arritmia de reperfusión del trading</span>
+          <span class="topic-pill">Protocolo de código mental</span>
+          <span class="topic-pill">Los 25 errores que casi me sacan del mercado</span>
+          <span class="topic-pill">La Fiesta — euforia y cómo sobrevivir a ella</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="module">
+      <div class="module-number">9</div>
+      <div class="module-content">
+        <div class="module-tag">MÓDULO 9 · Integración final</div>
+        <div class="module-title">Tu sistema — en vivo y documentado</div>
+        <div class="module-subtitle">El módulo de cierre donde todo converge. Tu primer trade real con el protocolo. Tu track record iniciado. Tu sistema propio.</div>
+        <div class="module-topics">
+          <span class="topic-pill">Operaciones reales en pantalla</span>
+          <span class="topic-pill">Track Record personalizado</span>
+          <span class="topic-pill">Tu protocolo escrito y firmado</span>
+          <span class="topic-pill">Comunidad de operadores PULSO</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- FORMATO -->
+<div class="section reveal">
+  <div class="section-label">Formato del curso</div>
+  <div class="section-title">9 clases en vivo.<br>90 minutos cada una.</div>
+  <div class="section-rule"></div>
+  <div class="format-grid">
+    <div class="format-card">
+      <div class="format-icon">⚡</div>
+      <div class="format-title">CLASES EN VIVO</div>
+      <div class="format-desc">Una clase semanal de 90 minutos en vivo con José Ferrer MD. Interacción directa, análisis en tiempo real y respuesta a preguntas en cada sesión.</div>
+    </div>
+    <div class="format-card">
+      <div class="format-icon">📅</div>
+      <div class="format-title">UN MÓDULO POR SEMANA</div>
+      <div class="format-desc">9 semanas de transformación progresiva — desde los fundamentos hasta tu primer trade documentado con el protocolo completo.</div>
+    </div>
+    <div class="format-card">
+      <div class="format-icon">🛠</div>
+      <div class="format-title">8 HERRAMIENTAS INCLUIDAS</div>
+      <div class="format-desc">Acceso completo a las 8 herramientas del Método PULSO — Calculadora, Ranking, Diagramas BMO/AMC, Bitácora, Simulador y Timer de sesión.</div>
+    </div>
+    <div class="format-card">
+      <div class="format-icon">👥</div>
+      <div class="format-title">COMUNIDAD PRIVADA</div>
+      <div class="format-desc">Acceso al grupo privado de operadores PULSO. Donde se comparten setups, se analizan trades y se mantiene la disciplina colectiva.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- PRECIO -->
+<div class="section reveal">
+  <div class="section-label">Inversión</div>
+  <div class="section-title">Primera cohorte.<br>En vivo.</div>
+  <div class="section-rule"></div>
+  <div class="price-card">
+    <div class="price-label">PRIMERA COHORTE EN VIVO · CUPOS LIMITADOS</div>
+    <div class="price-amount">$500</div>
+    <div class="price-period">Pago único · 9 semanas · 1 clase semanal de 90 minutos</div>
+    <ul class="price-features">
+      <li>9 clases en vivo con José Ferrer MD</li>
+      <li>9 módulos de transformación completa</li>
+      <li>8 herramientas del Método PULSO</li>
+      <li>Comunidad privada de operadores</li>
+      <li>Track Record Tool personalizada</li>
+      <li>Revisión de tu primer trade</li>
+      <li>Certificado de completación</li>
+      <li>Libro digital Dominio del Momentum</li>
+    </ul>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- TIMELINE -->
+<div class="section reveal">
+  <div class="section-label">Hoja de ruta</div>
+  <div class="section-title">Del guión<br>al lanzamiento.</div>
+  <div class="section-rule"></div>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot">1</div>
+      <div style="padding:12px 0;">
+        <div class="timeline-phase">FASE 1 · Mayo 2025</div>
+        <div class="timeline-title">Guiones y estructura de clases</div>
+        <div class="timeline-desc">Redacción de los guiones de cada módulo. Lista de espera abierta.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">2</div>
+      <div style="padding:12px 0;">
+        <div class="timeline-phase">FASE 2 · Junio 2025</div>
+        <div class="timeline-title">Preparación y plataforma</div>
+        <div class="timeline-desc">Setup de la plataforma. Confirmación de fechas de las 9 clases en vivo.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">3</div>
+      <div style="padding:12px 0;">
+        <div class="timeline-phase">FASE 3 · Julio 2025</div>
+        <div class="timeline-title">Inicio de la primera cohorte</div>
+        <div class="timeline-desc">Primera clase en vivo. Cupos limitados. $500 precio único.</div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">4</div>
+      <div style="padding:12px 0;">
+        <div class="timeline-phase">FASE 4 · Septiembre 2025</div>
+        <div class="timeline-title">Graduación primera cohorte</div>
+        <div class="timeline-desc">Cierre del programa. Certificaciones. Apertura de segunda cohorte.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-brand">JOSÉ FERRER, MD</div>
+  <div class="footer-sub">@jferrermd · joseferrermd.com · Medicina de las Decisiones Financieras</div>
+</div>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if(entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
